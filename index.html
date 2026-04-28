@@ -7,582 +7,356 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f3d55">
-<title>시리얼 등록</title>
+<title>시리얼(텍스트) 등록 시스템</title>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
 
 :root {
-  --bg: #eef2f6;
-  --p:  #1a5a7a;
-  --dk: #0f3d55;
-  --lt: #2478a0;
-  --gn: #27ae6e;
-  --wh: #ffffff;
-  --cd: #dde8f0;
-  --bd: #c0d4e4;
-  --tx: #0d2d3f;
-  --mt: #7a9aaa;
-  --st: env(safe-area-inset-top, 0px);
-  --sb: env(safe-area-inset-bottom, 0px);
+  --bg: #eef2f6; --p: #1a5a7a; --dk: #0f3d55; --lt: #2478a0;
+  --gn: #27ae6e; --wh: #ffffff; --cd: #dde8f0; --bd: #c0d4e4;
+  --tx: #0d2d3f; --mt: #7a9aaa;
+  --st: env(safe-area-inset-top, 0px); --sb: env(safe-area-inset-bottom, 0px);
 }
 
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
 html, body {
-  width:100%; height:100%;
-  font-family: 'Noto Sans KR', sans-serif;
-  background: var(--bg);
-  color: var(--tx);
-  overflow: hidden;
-  position: fixed;
+  width:100%; height:100%; font-family:'Noto Sans KR',sans-serif; background:var(--bg); color:var(--tx); overflow:hidden; position:fixed;
 }
 
-/* ── 앱 레이아웃 ── */
-#app { display: flex; flex-direction: column; width: 100%; height: 100%; padding-top: var(--st); padding-bottom: var(--sb); }
-#pages { flex: 1; overflow: hidden; position: relative; }
-.tab-page { position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; display: none; flex-direction: column; }
-.tab-page.active { display: flex; }
+#app { display:flex; flex-direction:column; width:100%; height:100%; padding-top:var(--st); padding-bottom:var(--sb); }
+#pages { flex:1; overflow:hidden; position:relative; }
+.tab-page { position:absolute; inset:0; overflow-y:auto; -webkit-overflow-scrolling:touch; display:none; flex-direction:column; }
+.tab-page.active { display:flex; }
 
 /* ── 하단 네비 ── */
-#nav { display: flex; flex-shrink: 0; background: var(--dk); border-top: 2px solid var(--p); }
-.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 0; background: none; border: none; color: rgba(255,255,255,0.4); font-family: 'Noto Sans KR', sans-serif; font-size: 10px; font-weight: 700; cursor: pointer; position: relative; touch-action: manipulation; }
-.nav-item svg { width: 22px; height: 22px; }
-.nav-item.active { color: #fff; }
-.nav-item.active::before { content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 3px; background: #fff; border-radius: 0 0 3px 3px; }
-.badge { position: absolute; top: 5px; right: calc(50% - 22px); background: #e74c3c; color: #fff; font-size: 9px; font-weight: 700; min-width: 16px; height: 16px; border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 0 3px; }
+#nav { display:flex; flex-shrink:0; background:var(--dk); border-top:2px solid var(--p); }
+.nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:10px 0; background:none; border:none; color:rgba(255,255,255,0.4); font-weight:700; cursor:pointer; }
+.nav-item.active { color:#fff; border-top:3px solid #fff; margin-top:-2px; }
+.badge { position:absolute; top:5px; right:calc(50% - 22px); background:#e74c3c; color:#fff; font-size:9px; font-weight:700; min-width:16px; height:16px; border-radius:8px; display:flex; align-items:center; justify-content:center; }
 
-/* ════════════════════════
-   PAGE 1 — 입력
-════════════════════════ */
-.scroll-wrap { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px 14px 30px; display: flex; flex-direction: column; gap: 12px; }
+/* ════════ PAGE 1 — 입력 ════════ */
+.scroll-wrap { flex:1; padding:14px; display:flex; flex-direction:column; gap:12px; }
+.top-bar { display:flex; align-items:center; gap:10px; background:var(--wh); border:1px solid var(--bd); border-radius:12px; padding:10px 14px; }
+.clock { font-size:13px; color:var(--mt); font-weight:500; white-space:nowrap; }
+.mgr-inp { flex:1; border:1.5px solid var(--bd); border-radius:8px; background:var(--cd); padding:9px 12px; font-size:15px; color:var(--tx); outline:none; }
+.mgr-inp:focus { border-color:var(--p); background:#fff; }
 
-/* 상단 날짜+담당자 */
-.top-bar { display: flex; align-items: center; gap: 10px; background: var(--wh); border: 1px solid var(--bd); border-radius: 12px; padding: 10px 14px; }
-.clock { font-size: 13px; color: var(--mt); font-weight: 500; flex-shrink: 0; white-space: nowrap; }
-.mgr-inp { flex: 1; min-width: 0; border: 1.5px solid var(--bd); border-radius: 8px; background: var(--cd); padding: 9px 12px; font-family: 'Noto Sans KR', sans-serif; font-size: 15px; color: var(--tx); outline: none; }
-.mgr-inp:focus { border-color: var(--p); background: #fff; }
-.mgr-inp::placeholder { color: var(--mt); }
+.sec-card { background:var(--wh); border:1px solid var(--bd); border-radius:12px; overflow:hidden; }
+.sec-head { display:flex; height:48px; }
+.sec-name { background:var(--dk); color:#fff; width:72px; display:flex; align-items:center; justify-content:center; font-weight:700; }
+.sec-btn { flex:1; background:var(--p); border:none; color:#fff; font-weight:700; font-size:15px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; }
+.sec-btn:active { background:var(--lt); }
 
-/* 섹션 카드 */
-.sec-card { background: var(--wh); border: 1px solid var(--bd); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
-.sec-head { display: flex; height: 52px; }
-.sec-name { background: var(--dk); color: #fff; width: 72px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; letter-spacing: 1px; }
-.sec-btn { flex: 1; background: var(--p); border: none; color: #fff; font-family: 'Noto Sans KR', sans-serif; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; touch-action: manipulation; }
-.sec-btn:active { background: var(--lt); }
-.sec-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+.input-row { display:flex; border-top:1px solid var(--bd); background:#fff; }
+.input-label { background:var(--cd); width:72px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:var(--dk); border-right:1px solid var(--bd); }
+.input-field { flex:1; border:none; padding:12px 14px; font-size:15px; color:var(--tx); outline:none; width: 100%; display:block;}
+.input-field:focus { background:#f0f8ff; border-left:2px solid var(--p); }
+.input-field::placeholder { color:#bbb; font-size:13px; }
 
-/* 시리얼 & 넘버 공통 행 */
-.num-row { display: flex; border-top: 1px solid var(--bd); }
-.num-label { background: var(--cd); width: 72px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--dk); border-right: 1px solid var(--bd); }
-.num-input { flex: 1; border: none; outline: none; padding: 11px 14px; font-family: 'Noto Sans KR', sans-serif; font-size: 15px; color: var(--tx); background: #fffbe6; } /* 수동입력용 노란배경 */
-.num-input:focus { background: #fff; border-left: 2px solid var(--p); }
-.num-input::placeholder { color: #bbb; font-size: 13px; }
+.ratio-card { background:var(--wh); border:1px solid var(--bd); border-radius:12px; padding:14px; }
+.prog-bar { display:flex; height:40px; border-radius:20px; overflow:hidden; background:#eee; margin-bottom:12px; }
+.prog-s { background:linear-gradient(90deg, #0f3d55, #1a5a7a); display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:700; transition:0.3s; }
+.prog-h { background:linear-gradient(90deg, #1e8a58, #27ae6e); display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:700; transition:0.3s; }
+input[type=range] { -webkit-appearance:none; width:100%; height:10px; border-radius:5px; background:var(--cd); margin:10px 0; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:28px; height:28px; border-radius:50%; background:var(--p); border:3px solid #fff; }
 
-/* 시리얼 전용 행 강조 */
-.num-input.serial { background: #f0f4f8; } /* 스캔입력용 푸른배경 */
-.num-row.serial .num-label { color: var(--p); }
+.reg-btn { width:100%; padding:16px; background:var(--dk); color:#fff; border:none; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer; }
 
-/* 비율 카드 */
-.ratio-card { background: var(--wh); border: 1px solid var(--bd); border-radius: 12px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
-.ratio-title { text-align: center; font-size: 10px; font-weight: 700; color: var(--mt); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px; }
-.prog-bar { display: flex; height: 44px; border-radius: 22px; overflow: hidden; box-shadow: inset 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 8px; }
-.prog-s { background: linear-gradient(90deg, #0f3d55, #1a5a7a); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 700; transition: width .25s cubic-bezier(.34,1.2,.64,1); overflow: hidden; min-width: 0; }
-.prog-h { background: linear-gradient(90deg, #1e8a58, #27ae6e); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 700; transition: width .25s cubic-bezier(.34,1.2,.64,1); overflow: hidden; min-width: 0; }
-.prog-labels { display: flex; justify-content: space-between; padding: 0 4px; margin-bottom: 12px; }
-.lbl-s { font-size: 13px; font-weight: 700; color: var(--p); }
-.lbl-h { font-size: 13px; font-weight: 700; color: var(--gn); }
-.slider-row { margin-bottom: 10px; }
-.slider-row:last-child { margin-bottom: 0; }
-.slider-top { display: flex; justify-content: space-between; margin-bottom: 7px; }
-.slider-name { font-size: 13px; font-weight: 700; }
-.slider-pct { font-size: 13px; font-weight: 700; }
-.slider-pct.s { color: var(--p); }
-.slider-pct.h { color: var(--gn); }
+/* ════════ PAGE 2 — 목록 ════════ */
+.list-tool { display:flex; gap:8px; padding:10px; background:var(--dk); }
+.list-search { flex:1; padding:10px; border-radius:8px; border:none; }
+.list-body { flex:1; padding:10px; overflow-y:auto; }
+.list-card { background:#fff; border:1px solid var(--bd); border-radius:10px; padding:12px; margin-bottom:10px; }
+.list-actions { padding:10px; display:flex; background:var(--dk); }
+.act-btn { flex:1; padding:12px; background:var(--gn); color:#fff; border:none; border-radius:8px; font-weight:700; }
 
-input.rng { -webkit-appearance: none; width: 100%; height: 12px; border-radius: 6px; outline: none; border: none; cursor: pointer; background: #dde8f0; }
-input.rng.s::-webkit-slider-thumb { -webkit-appearance: none; width: 32px; height: 32px; border-radius: 50%; background: var(--p); border: 4px solid #fff; box-shadow: 0 3px 10px rgba(26,90,122,.3); }
-input.rng.h::-webkit-slider-thumb { -webkit-appearance: none; width: 32px; height: 32px; border-radius: 50%; background: var(--gn); border: 4px solid #fff; box-shadow: 0 3px 10px rgba(39,174,110,.3); }
+/* 카메라 뷰 (OCR 전용) */
+#cam-wrap { position:fixed; inset:0; background:#000; z-index:1000; display:none; flex-direction:column; }
+#cam-video { width:100%; height:100%; object-fit:cover; }
+.cam-hdr { padding:15px; display:flex; justify-content:space-between; background:rgba(0,0,0,0.8); color:#fff; }
 
-/* 등록 버튼 */
-.reg-btn { width: 100%; padding: 17px; background: var(--dk); color: #fff; border: none; border-radius: 14px; font-family: 'Noto Sans KR', sans-serif; font-size: 17px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 6px 20px rgba(15,61,85,.3); cursor: pointer; touch-action: manipulation; }
-.reg-btn:active { transform: scale(.98); background: var(--p); }
+/* 텍스트 캡처 영역 디자인 */
+.text-box { position:absolute; top:40%; left:50%; transform:translate(-50%, -50%); width:280px; height:80px; border:2px solid #00d4ff; border-radius:8px; box-shadow:0 0 0 1000px rgba(0,0,0,0.6); }
+.ocr-btn { position:absolute; bottom:50px; left:50%; transform:translateX(-50%); background:#00d4ff; color:#000; padding:15px 30px; border-radius:30px; font-size:16px; font-weight:900; border:none; box-shadow:0 4px 15px rgba(0,212,255,0.4); cursor:pointer; }
+.ocr-btn:active { transform:translateX(-50%) scale(0.95); }
 
-/* 미리보기 */
-.preview-box { background: var(--dk); border-radius: 12px; padding: 12px; min-height: 80px; }
-.pv-empty { display: flex; align-items: center; justify-content: center; height: 56px; color: rgba(255,255,255,.3); font-size: 12px; }
-.pv-entry { padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,.08); }
-.pv-entry:last-child { border-bottom: none; padding-bottom: 0; }
-.pv-no   { color: rgba(255,255,255,.4); font-size: 11px; margin-bottom: 2px; }
-.pv-line { font-size: 12px; color: #fff; line-height: 1.9; }
-.pv-line span { color: rgba(255,255,255,.5); }
-
-/* ════════════════════════
-   PAGE 2: 목록
-════════════════════════ */
-.list-tool { display: flex; gap: 8px; padding: 10px 14px; background: var(--dk); border-bottom: 2px solid var(--p); flex-shrink: 0; }
-.list-search { flex: 1; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); border-radius: 10px; padding: 9px 13px; color: #fff; font-family: 'Noto Sans KR', sans-serif; font-size: 15px; outline: none; }
-.list-search::placeholder { color: rgba(255,255,255,.4); }
-.del-all-btn { background: none; border: 1px solid rgba(255,255,255,.3); color: rgba(255,255,255,.7); padding: 0 14px; border-radius: 10px; font-family: 'Noto Sans KR', sans-serif; font-size: 11px; font-weight: 700; cursor: pointer; touch-action: manipulation; white-space: nowrap; }
-
-.list-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 8px 14px; background: var(--bg); }
-.list-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 50px 20px; color: var(--mt); font-size: 13px; }
-.list-card { background: var(--wh); border: 1px solid var(--bd); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
-.lc-top { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
-.lc-num { background: var(--p); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; flex-shrink: 0; }
-.lc-time { font-size: 10px; color: var(--mt); flex: 1; }
-.lc-del { background: none; border: none; color: var(--mt); font-size: 22px; cursor: pointer; padding: 0 4px; line-height: 1; touch-action: manipulation; }
-.lc-del:active { color: #e74c3c; }
-
-.lc-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
-.lc-row:last-child { margin-bottom: 0; }
-.lc-tag { font-size: 10px; font-weight: 700; color: var(--dk); background: var(--cd); padding: 2px 8px; border-radius: 4px; min-width: 44px; text-align: center; flex-shrink: 0; }
-.lc-tag.g { color: #1a6a40; background: #d4f0e4; }
-.lc-val { font-size: 13px; color: var(--tx); word-break: break-all; }
-.lc-val b { color: var(--p); }
-.lc-ratio { font-size: 11px; font-weight: 700; color: var(--p); }
-.lc-mgr { font-size: 11px; color: var(--mt); margin-left: 8px; }
-
-.list-actions { display: flex; gap: 8px; padding: 10px 14px; background: var(--dk); border-top: 2px solid var(--p); flex-shrink: 0; }
-.act-btn { flex: 1; padding: 13px; border: none; border-radius: 10px; background: var(--gn); color: #fff; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; touch-action: manipulation; }
-
-/* ════════════════════════
-   PAGE 3: 설정
-════════════════════════ */
-.set-page { flex: 1; overflow-y: auto; padding: 16px 14px; display: flex; flex-direction: column; gap: 12px; background: var(--bg); }
-.set-ttl { font-size: 10px; font-weight: 700; color: var(--mt); letter-spacing: 3px; text-transform: uppercase; }
-.set-card { background: var(--wh); border: 1px solid var(--bd); border-radius: 12px; overflow: hidden; }
-.set-row { padding: 13px 14px; border-bottom: 1px solid var(--bd); }
-.set-row:last-child { border-bottom: none; }
-.set-lbl { font-size: 10px; font-weight: 700; color: var(--mt); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
-.set-inp { background: transparent; border: none; outline: none; color: var(--tx); font-family: 'Noto Sans KR', sans-serif; font-size: 14px; width: 100%; }
-.set-inp::placeholder { color: var(--mt); }
-.set-desc { font-size: 10px; color: var(--mt); line-height: 1.7; margin-top: 4px; }
-.set-steps { font-size: 11px; color: var(--mt); line-height: 2.3; }
-.set-save { width: 100%; padding: 14px; background: var(--p); color: #fff; border: none; border-radius: 12px; font-family: 'Noto Sans KR', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; }
-.gas-wrap { position: relative; }
-.copy-gas { position: absolute; top: 8px; right: 8px; background: var(--cd); border: 1px solid var(--bd); border-radius: 6px; color: var(--mt); font-size: 10px; padding: 4px 10px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; }
-pre#gas-code { font-size: 10px; color: var(--mt); line-height: 1.7; white-space: pre-wrap; word-break: break-all; padding-right: 52px; }
-
-/* ════════════════════════
-   카메라 풀스크린
-════════════════════════ */
-#cam-wrap { position: fixed; inset: 0; background: #000; z-index: 500; display: none; flex-direction: column; padding-top: var(--st); padding-bottom: var(--sb); }
-#cam-wrap.open { display: flex; }
-.cam-hdr { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: rgba(0,0,0,.9); flex-shrink: 0; }
-.cam-title { color: #fff; font-size: 16px; font-weight: 700; }
-.cam-close { background: rgba(255,255,255,.15); border: none; color: #fff; font-size: 14px; font-weight: 700; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; }
-.cam-body { flex: 1; position: relative; overflow: hidden; min-height: 0; }
-#cam-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.dim { position: absolute; background: rgba(0,0,0,.52); }
-.dim.t { top:0; left:0; right:0; height: calc(50% - 65px); }
-.dim.b { bottom:0; left:0; right:0; height: calc(50% - 65px); }
-.dim.l { top:calc(50% - 65px); left:0; width:calc(50% - 130px); height:130px; }
-.dim.r { top:calc(50% - 65px); right:0; width:calc(50% - 130px); height:130px; }
-.scan-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 260px; height: 130px; }
-.scan-box::before, .scan-box::after, .scan-box > span::before, .scan-box > span::after { content: ''; position: absolute; width: 24px; height: 24px; border-color: #fff; border-style: solid; }
-.scan-box::before  { top:0;    left:0;  border-width:3px 0 0 3px; border-radius:2px 0 0 0; }
-.scan-box::after   { top:0;    right:0; border-width:3px 3px 0 0; border-radius:0 2px 0 0; }
-.scan-box>span::before { bottom:0; left:0;  border-width:0 0 3px 3px; border-radius:0 0 0 2px; }
-.scan-box>span::after  { bottom:0; right:0; border-width:0 3px 3px 0; border-radius:0 0 2px 0; }
-.laser-line { position: absolute; left: 6px; right: 6px; height: 2px; background: linear-gradient(90deg, transparent, #00d4ff, #fff, #00d4ff, transparent); box-shadow: 0 0 8px #00d4ff; animation: lz 1.8s ease-in-out infinite; }
-@keyframes lz { 0%{top:4px;opacity:.4} 50%{top:122px;opacity:1} 100%{top:4px;opacity:.4} }
-.cam-hint { position: absolute; bottom: 14px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,.55); font-size: 12px; }
-.cam-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 10; transition: opacity .05s; }
-.cam-flash.on { opacity: .4; }
-.cam-ftr { display: flex; align-items: center; gap: 10px; padding: 14px 16px; background: rgba(0,0,0,.9); flex-shrink: 0; min-height: 54px; }
-.torch-btn { background: rgba(255,255,255,.12); border: none; color: rgba(255,255,255,.7); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; font-size: 12px; touch-action: manipulation; margin-left: auto; }
-.torch-btn.on { background: rgba(255,200,0,.25); color: #ffd700; }
-
-/* 모달 & 토스트 */
-#modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.65); backdrop-filter: blur(6px); z-index: 600; display: none; align-items: flex-end; padding-bottom: var(--sb); }
-#modal-bg.open { display: flex; }
-#modal-sheet { background: var(--wh); border-radius: 22px 22px 0 0; padding: 10px 22px 32px; width: 100%; animation: sheetUp .3s ease; }
-@keyframes sheetUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
-.m-handle { width:36px; height:4px; background:var(--bd); border-radius:2px; margin:0 auto 20px; }
-.m-icon { width:52px; height:52px; border-radius:50%; margin:0 auto 14px; display:flex; align-items:center; justify-content:center; }
-.m-icon.ok  { background:rgba(39,174,96,.1); border:1.5px solid rgba(39,174,96,.3); }
-.m-h2 { font-size:18px; font-weight:700; text-align:center; margin-bottom:8px; }
-.m-p  { font-size:13px; color:var(--mt); text-align:center; line-height:1.75; margin-bottom:16px; }
-.m-steps { background:var(--cd); border-radius:10px; padding:12px; font-size:11px; color:var(--mt); line-height:2.2; margin-bottom:16px; }
-.m-btns { display:flex; flex-direction:column; gap:8px; }
-.m-btn { width:100%; padding:14px; border-radius:12px; border:none; font-family:'Noto Sans KR',sans-serif; font-size:15px; font-weight:700; cursor:pointer; touch-action:manipulation; background:var(--p); color:#fff;}
-#toast { position: fixed; bottom: calc(76px + var(--sb)); left: 50%; transform: translateX(-50%) translateY(16px); background: rgba(15,61,85,.96); border-radius: 22px; padding: 10px 20px; font-size: 13px; color: #fff; z-index: 700; opacity: 0; transition: all .25s; white-space: nowrap; pointer-events: none; max-width: 88vw; }
-#toast.on { opacity:1; transform:translateX(-50%) translateY(0); }
+#toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); color:#fff; padding:12px 24px; border-radius:20px; font-size:13px; z-index:2000; opacity:0; transition:0.3s; pointer-events:none; }
+#toast.on { opacity:1; }
 </style>
 </head>
 <body>
-
 <div id="app">
   <div id="pages">
-
     <div class="tab-page active" id="pg-main">
       <div class="scroll-wrap">
-
         <div class="top-bar">
           <div class="clock" id="clock-el">--.--.--</div>
-          <input class="mgr-inp" id="mgr-inp" type="text" placeholder="담당자 이름" autocomplete="off">
+          <input class="mgr-inp" id="mgr-inp" type="text" placeholder="담당자 이름">
         </div>
 
         <div class="sec-card">
           <div class="sec-head">
             <div class="sec-name">주제</div>
-            <button class="sec-btn" onclick="openCam('subject')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
-              </svg> 바코드 스캔
-            </button>
+            <button class="sec-btn" onclick="openCam('subject')">카메라로 글자 읽기</button>
           </div>
-          <div class="num-row serial">
-            <div class="num-label">시리얼</div>
-            <input class="num-input serial" id="code-s" type="text" placeholder="스캔 시 자동입력 (수동 가능)" autocomplete="off">
+          <div class="input-row">
+            <div class="input-label" style="color:var(--p)">시리얼</div>
+            <input class="input-field" id="s-serial" type="text" placeholder="카메라로 읽거나 직접 입력">
           </div>
-          <div class="num-row">
-            <div class="num-label">넘버</div>
-            <input class="num-input" id="num-s" type="text" inputmode="decimal" placeholder="직접 입력" autocomplete="off">
+          <div class="input-row">
+            <div class="input-label">넘버</div>
+            <input class="input-field" id="s-num" type="text" placeholder="넘버 직접 입력">
           </div>
         </div>
 
         <div class="sec-card">
           <div class="sec-head">
             <div class="sec-name">경화제</div>
-            <button class="sec-btn" onclick="openCam('hardener')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
-              </svg> 바코드 스캔
-            </button>
+            <button class="sec-btn" onclick="openCam('hardener')">카메라로 글자 읽기</button>
           </div>
-          <div class="num-row serial">
-            <div class="num-label">시리얼</div>
-            <input class="num-input serial" id="code-h" type="text" placeholder="스캔 시 자동입력 (수동 가능)" autocomplete="off">
+          <div class="input-row">
+            <div class="input-label" style="color:var(--p)">시리얼</div>
+            <input class="input-field" id="h-serial" type="text" placeholder="카메라로 읽거나 직접 입력">
           </div>
-          <div class="num-row">
-            <div class="num-label">넘버</div>
-            <input class="num-input" id="num-h" type="text" inputmode="decimal" placeholder="직접 입력" autocomplete="off">
+          <div class="input-row">
+            <div class="input-label">넘버</div>
+            <input class="input-field" id="h-num" type="text" placeholder="넘버 직접 입력">
           </div>
         </div>
 
         <div class="ratio-card">
-          <div class="ratio-title">비 율</div>
+          <div style="font-size:12px; font-weight:700; margin-bottom:10px;">비율 설정</div>
           <div class="prog-bar">
-            <div class="prog-s" id="prog-s" style="width:50%"><span id="prog-s-txt">50%</span></div>
-            <div class="prog-h" id="prog-h" style="width:50%"><span id="prog-h-txt">50%</span></div>
+            <div class="prog-s" id="prog-s" style="width:50%"><span id="p-s-txt">주제 50%</span></div>
+            <div class="prog-h" id="prog-h" style="width:50%"><span id="p-h-txt">경화제 50%</span></div>
           </div>
-          <div class="prog-labels">
-            <span class="lbl-s">주제 <b id="pct-s">50</b>%</span>
-            <span class="lbl-h">경화제 <b id="pct-h">50</b>%</span>
-          </div>
-          <div class="slider-row">
-            <div class="slider-top"><span class="slider-name">주제</span><span class="slider-pct s" id="val-s">50%</span></div>
-            <input class="rng s" id="sl-s" type="range" min="0" max="100" value="50">
-          </div>
-          <div class="slider-row">
-            <div class="slider-top"><span class="slider-name">경화제</span><span class="slider-pct h" id="val-h">50%</span></div>
-            <input class="rng h" id="sl-h" type="range" min="0" max="100" value="50">
-          </div>
+          <input type="range" id="sl-s" min="0" max="100" value="50" oninput="syncRatio(this.value)">
         </div>
 
-        <button class="reg-btn" onclick="doSubmit()">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          입력 등록 완료
-        </button>
-
-        <div class="preview-box" id="preview-box">
-          <div class="pv-empty">등록된 항목이 없습니다</div>
-        </div>
-
+        <button class="reg-btn" onclick="doSubmit()">데이터 등록</button>
       </div>
     </div>
 
     <div class="tab-page" id="pg-list">
       <div class="list-tool">
-        <input class="list-search" id="list-search" type="text" placeholder="🔍 검색..." oninput="renderList()">
-        <button class="del-all-btn" onclick="clearAll()">전체삭제</button>
+        <input class="list-search" id="list-search" type="text" placeholder="검색..." oninput="renderList()">
+        <button style="background:none; border:1px solid #fff; color:#fff; border-radius:8px; padding:0 10px;" onclick="clearAll()">초기화</button>
       </div>
       <div class="list-body" id="list-body"></div>
       <div class="list-actions">
-        <button class="act-btn" onclick="doExcel()">📊 엑셀 다운로드</button>
+        <button class="act-btn" onclick="doExcel()">엑셀 다운로드</button>
       </div>
     </div>
-
-    <div class="tab-page set-page" id="pg-set">
-      <div class="set-ttl">구글 시트 연동</div>
-      <div class="set-card">
-        <div class="set-row">
-          <div class="set-lbl">Apps Script URL</div>
-          <input class="set-inp" id="gas-url" type="text" placeholder="https://script.google.com/macros/s/..." autocomplete="off">
-        </div>
-      </div>
-      <button class="set-save" onclick="saveSettings()">설정 저장</button>
-    </div>
-
   </div>
 
   <nav id="nav">
-    <button class="nav-item active" onclick="goTab('main', this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> 입력
-    </button>
-    <button class="nav-item" onclick="goTab('list', this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h6M7 16h4"/></svg> 목록
-      <span class="badge" id="badge" style="display:none">0</span>
-    </button>
-    <button class="nav-item" onclick="goTab('set', this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> 설정
-    </button>
+    <button class="nav-item active" onclick="goTab('main', this)">입력</button>
+    <button class="nav-item" onclick="goTab('list', this)">목록 <span class="badge" id="badge" style="display:none">0</span></button>
   </nav>
 </div>
 
 <div id="cam-wrap">
   <div class="cam-hdr">
-    <div class="cam-title" id="cam-title">바코드 스캔</div>
-    <button class="cam-close" onclick="closeCam()">✕ 닫기</button>
+    <span id="cam-title">글자 인식 (OCR)</span>
+    <button onclick="closeCam()" style="background:none; border:none; color:#fff; font-size:16px;">✕ 닫기</button>
   </div>
-  <div class="cam-body">
+  <div style="flex:1; position:relative; overflow:hidden;">
     <video id="cam-video" playsinline autoplay muted></video>
-    <div class="dim t"></div><div class="dim b"></div><div class="dim l"></div><div class="dim r"></div>
-    <div class="scan-box"><span></span><div class="laser-line"></div></div>
-    <div class="cam-hint">바코드를 박스 안에 맞추세요</div>
-    <div class="cam-flash" id="cam-flash"></div>
-  </div>
-  <div class="cam-ftr">
-    <button class="torch-btn" id="torch-btn" onclick="toggleTorch()" style="display:none">🔦 플래시</button>
+    <div class="text-box"></div>
+    <div style="position:absolute; top:calc(40% + 50px); width:100%; text-align:center; color:#fff; font-size:12px;">글자를 파란 박스 안에 맞추고 아래 버튼을 누르세요</div>
+    
+    <button class="ocr-btn" id="ocr-btn" onclick="captureAndRead()">📸 텍스트 읽기</button>
   </div>
 </div>
 
-<div id="modal-bg"><div id="modal-sheet"></div></div>
 <div id="toast"></div>
 
-<script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
-
 <script>
-var entries = JSON.parse(localStorage.getItem('sr_v5') || '[]');
-var camTarget = '';
-var camStream = null;
-var zxReader = null;
-var rafId = null;
-var cooldown = false;
-var torchTrk = null;
-var torchOn = false;
+let entries = JSON.parse(localStorage.getItem('sr_v_ocr') || '[]');
+let camTarget = '';
+let camStream = null;
+let isProcessing = false;
 
-document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('gas-url').value = localStorage.getItem('sr_gasUrl') || '';
+document.addEventListener('DOMContentLoaded', () => {
   clock(); setInterval(clock, 20000);
-  initSliders(); renderPreview(); renderList(); updateBadge();
-  document.getElementById('cam-wrap').addEventListener('touchmove', function(e){ e.preventDefault(); }, {passive: false});
+  renderList(); updateBadge(); syncRatio(50);
 });
 
-function p2(n) { return n < 10 ? '0'+n : ''+n; }
 function clock() {
-  var d = new Date();
-  document.getElementById('clock-el').textContent = d.getFullYear() + '.' + (d.getMonth()+1) + '.' + d.getDate() + ' ' + p2(d.getHours()) + ':' + p2(d.getMinutes());
+  const d = new Date();
+  document.getElementById('clock-el').textContent = `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
-/* 슬라이더 연동 */
-function initSliders() {
-  document.getElementById('sl-s').addEventListener('input', function() { applyRatio(+this.value); });
-  document.getElementById('sl-h').addEventListener('input', function() { applyRatio(100 - +this.value); });
-  applyRatio(50);
-}
-function applyRatio(s) {
-  var h = 100 - s;
-  document.getElementById('sl-s').value = s; document.getElementById('sl-h').value = h;
+function syncRatio(val) {
+  const s = parseInt(val); const h = 100 - s;
   document.getElementById('prog-s').style.width = s + '%'; document.getElementById('prog-h').style.width = h + '%';
-  document.getElementById('prog-s-txt').textContent = s > 12 ? s+'%' : '';
-  document.getElementById('prog-h-txt').textContent = h > 12 ? h+'%' : '';
-  document.getElementById('pct-s').textContent = s; document.getElementById('pct-h').textContent = h;
-  document.getElementById('val-s').textContent = s + '%'; document.getElementById('val-h').textContent = h + '%';
-  document.getElementById('sl-s').style.background = 'linear-gradient(to right,#1a5a7a 0%,#1a5a7a '+s+'%,#dde8f0 '+s+'%,#dde8f0 100%)';
-  document.getElementById('sl-h').style.background = 'linear-gradient(to right,#27ae6e 0%,#27ae6e '+h+'%,#dde8f0 '+h+'%,#dde8f0 100%)';
+  document.getElementById('p-s-txt').textContent = `주제 ${s}%`; document.getElementById('p-h-txt').textContent = `경화제 ${h}%`;
 }
 
 function goTab(tab, btn) {
-  document.querySelectorAll('.tab-page').forEach(function(p) { p.classList.remove('active'); });
-  document.querySelectorAll('.nav-item').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   document.getElementById('pg-' + tab).classList.add('active');
   btn.classList.add('active');
-  if (tab === 'list') renderList();
+  if(tab === 'list') renderList();
 }
 
-/* 카메라 모듈 */
-function openCam(target) {
+/* 카메라 켜기 */
+async function openCam(target) {
   camTarget = target;
-  document.getElementById('cam-title').textContent = target === 'subject' ? '주제 바코드 스캔' : '경화제 바코드 스캔';
-  startCam();
-}
+  document.getElementById('cam-wrap').style.display = 'flex';
+  document.getElementById('ocr-btn').textContent = "📸 텍스트 읽기";
 
-async function startCam() {
-  stopCam();
-  document.getElementById('cam-wrap').classList.add('open');
   try {
-    var stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+    const stream = await navigator.mediaDevices.getUserMedia({ 
+      video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } 
+    });
     camStream = stream;
-    var vid = document.getElementById('cam-video');
-    vid.srcObject = stream;
-    await vid.play();
-
-    var tracks = stream.getVideoTracks();
-    if (tracks.length) {
-      try {
-        var caps = tracks[0].getCapabilities ? tracks[0].getCapabilities() : {};
-        if (caps.torch) { torchTrk = tracks[0]; document.getElementById('torch-btn').style.display = 'block'; }
-      } catch(e) {}
-    }
-
-    var hints = new Map();
-    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-    zxReader = new ZXing.MultiFormatReader();
-    zxReader.setHints(hints);
-
-    var cvs = document.createElement('canvas');
-    var ctx = cvs.getContext('2d');
-
-    function tick() {
-      if (!camStream) return;
-      if (vid.readyState >= 2 && vid.videoWidth > 0) {
-        cvs.width = vid.videoWidth; cvs.height = vid.videoHeight;
-        ctx.drawImage(vid, 0, 0);
-        try {
-          var lum = new ZXing.RGBLuminanceSource(ctx.getImageData(0, 0, cvs.width, cvs.height).data, cvs.width, cvs.height);
-          var bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum));
-          var res = zxReader.decode(bmp);
-          if (res && !cooldown) { onResult(res.getText()); return; }
-        } catch(e) {}
-      }
-      rafId = requestAnimationFrame(tick);
-    }
-    rafId = requestAnimationFrame(tick);
-  } catch(err) {
-    stopCam(); document.getElementById('cam-wrap').classList.remove('open');
-    toast('카메라 오류: 브라우저 권한을 확인해주세요.');
-  }
-}
-
-function onResult(code) {
-  if (!code || cooldown) return;
-  cooldown = true;
-  if (navigator.vibrate) navigator.vibrate(80);
-  
-  // 시리얼 input 태그에 직접 값 세팅
-  if (camTarget === 'subject') {
-    document.getElementById('code-s').value = code;
-  } else {
-    document.getElementById('code-h').value = code;
-  }
-
-  setTimeout(function() {
+    document.getElementById('cam-video').srcObject = stream;
+  } catch(e) {
+    toast("카메라 접근 권한이 없습니다.");
     closeCam();
-    toast('✓ 스캔 완료: ' + code);
-    setTimeout(function() { cooldown = false; }, 400);
-  }, 300);
+  }
 }
 
-function stopCam() {
-  if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-  if (camStream) { camStream.getTracks().forEach(function(t) { t.stop(); }); camStream = null; }
-  var vid = document.getElementById('cam-video');
-  if (vid) { vid.srcObject = null; }
-  zxReader = null; torchTrk = null; torchOn = false;
-  document.getElementById('torch-btn').style.display = 'none';
-  document.getElementById('torch-btn').className = 'torch-btn';
-}
-function closeCam() { stopCam(); document.getElementById('cam-wrap').classList.remove('open'); }
-
-async function toggleTorch() {
-  if (!torchTrk) return;
-  try { torchOn = !torchOn; await torchTrk.applyConstraints({ advanced: [{ torch: torchOn }] }); document.getElementById('torch-btn').className = 'torch-btn' + (torchOn ? ' on' : ''); } catch(e) {}
+function closeCam() {
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+  document.getElementById('cam-video').srcObject = null;
+  document.getElementById('cam-wrap').style.display = 'none';
+  isProcessing = false;
 }
 
-/* 데이터 검증 및 저장 */
-function doSubmit() {
-  var sc = document.getElementById('code-s').value.trim(); // 시리얼 (스캔 또는 직접입력)
-  var hc = document.getElementById('code-h').value.trim();
-  var sn = document.getElementById('num-s').value.trim();  // 넘버 (수동입력)
-  var hn = document.getElementById('num-h').value.trim();
+/* ★ Tesseract.js (OCR) 텍스트 분석 로직 ★ */
+async function captureAndRead() {
+  if (isProcessing) return;
+  isProcessing = true;
+  const btn = document.getElementById('ocr-btn');
+  btn.textContent = "⏳ 글자 분석 중...";
+  btn.style.background = "#f39c12";
+
+  try {
+    const video = document.getElementById('cam-video');
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    
+    // 비디오 프레임을 캔버스에 찍음
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Tesseract로 영어/숫자(eng) 인식 실행
+    // ※ 최초 1회 실행 시 인식 엔진 데이터를 다운로드 하므로 약 2~4초 소요될 수 있습니다.
+    const { data: { text } } = await Tesseract.recognize(
+      canvas,
+      'eng', 
+      { logger: m => console.log(m) } // 콘솔에서 진행률 확인 가능
+    );
+
+    // 인식된 텍스트에서 특수문자나 공백을 제거하고 숫자, 영어, 바(-)만 남김
+    const cleanText = text.replace(/[^a-zA-Z0-9-]/g, '').trim();
+
+    if (cleanText.length > 2) {
+      if (navigator.vibrate) navigator.vibrate(100);
+      
+      // 입력창에 값 세팅
+      if (camTarget === 'subject') {
+        document.getElementById('s-serial').value = cleanText;
+      } else {
+        document.getElementById('h-serial').value = cleanText;
+      }
+      
+      toast(`[인식 성공] ${cleanText}`);
+      closeCam();
+    } else {
+      toast("글자를 제대로 인식하지 못했습니다. 초점을 맞춰 다시 찍어주세요.");
+      btn.textContent = "📸 다시 찍기";
+      btn.style.background = "#00d4ff";
+    }
+
+  } catch (error) {
+    toast("텍스트 인식 오류가 발생했습니다.");
+    btn.textContent = "📸 다시 찍기";
+    btn.style.background = "#00d4ff";
+  }
   
-  if (!sc && !sn && !hc && !hn) { toast('주제 또는 경화제 정보를 하나라도 입력해주세요'); return; }
+  isProcessing = false;
+}
 
-  var d = new Date();
-  var dt = d.getFullYear()+'.'+p2(d.getMonth()+1)+'.'+p2(d.getDate())+' '+p2(d.getHours())+':'+p2(d.getMinutes())+':'+p2(d.getSeconds());
-  var sv = +document.getElementById('sl-s').value;
-  var e = {
+/* 데이터 제출 로직 */
+function doSubmit() {
+  const ss = document.getElementById('s-serial').value.trim();
+  const sn = document.getElementById('s-num').value.trim();
+  const hs = document.getElementById('h-serial').value.trim();
+  const hn = document.getElementById('h-num').value.trim();
+  
+  if (!(ss || sn) || !(hs || hn)) {
+    toast("주제와 경화제의 시리얼 또는 넘버를 각각 1개 이상 입력하세요.");
+    return;
+  }
+
+  const d = new Date();
+  const dt = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  const sv = parseInt(document.getElementById('sl-s').value);
+
+  const entry = {
     id: Date.now(), num: entries.length + 1, dt: dt,
     mgr: document.getElementById('mgr-inp').value.trim(),
-    ss: sc, sn: sn, hs: hc, hn: hn, sr: sv, hr: 100 - sv
+    ss: ss, sn: sn, hs: hs, hn: hn, sr: sv, hr: 100 - sv
   };
-  entries.push(e);
-  localStorage.setItem('sr_v5', JSON.stringify(entries));
 
-  /* 리셋 */
-  document.getElementById('code-s').value = ''; document.getElementById('code-h').value = '';
-  document.getElementById('num-s').value = '';  document.getElementById('num-h').value = '';
+  entries.push(entry);
+  localStorage.setItem('sr_v_ocr', JSON.stringify(entries));
 
-  updateBadge(); renderPreview(); renderList();
-  toast('✓ ' + e.num + '번 등록 완료');
-}
+  // 필드 초기화
+  document.getElementById('s-serial').value = ''; document.getElementById('s-num').value = '';
+  document.getElementById('h-serial').value = ''; document.getElementById('h-num').value = '';
 
-/* 렌더링 */
-function renderPreview() {
-  var el = document.getElementById('preview-box');
-  if (!entries.length) { el.innerHTML = '<div class="pv-empty">등록된 항목이 없습니다</div>'; return; }
-  el.innerHTML = entries.slice(-5).reverse().map(function(e) {
-    return '<div class="pv-entry">' +
-      '<div class="pv-no">' + e.num + '번 · ' + e.dt.slice(0,16) + (e.mgr ? ' · ' + e.mgr : '') + '</div>' +
-      '<div class="pv-line"><span>주제</span> ' + (e.ss||'-') + (e.sn?' #'+e.sn:'') + '</div>' +
-      '<div class="pv-line"><span>경화제</span> ' + (e.hs||'-') + (e.hn?' #'+e.hn:'') + '</div>' +
-      '<div class="pv-line"><span>비율</span> ' + e.sr + ' : ' + e.hr + '</div>' +
-    '</div>';
-  }).join('');
+  updateBadge(); renderList();
+  toast("✓ 등록이 완료되었습니다.");
 }
 
 function renderList() {
-  var q = (document.getElementById('list-search') ? document.getElementById('list-search').value : '').toLowerCase();
-  var fl = q ? entries.filter(function(e) { return ((e.ss||'')+(e.sn||'')+(e.hs||'')+(e.hn||'')+(e.mgr||'')).toLowerCase().includes(q); }) : entries;
-  var el = document.getElementById('list-body');
-  if (!fl.length) {
-    el.innerHTML = '<div class="list-empty"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h6M7 16h4"/></svg><span>' + (q ? '검색 결과 없음' : '등록된 항목이 없습니다') + '</span></div>';
-    return;
-  }
-  el.innerHTML = fl.map(function(e) {
-    return '<div class="list-card">' +
-      '<div class="lc-top"><span class="lc-num">No.' + e.num + '</span><span class="lc-time">' + e.dt.slice(0,16) + '</span><button class="lc-del" onclick="delE(' + e.id + ')">×</button></div>' +
-      '<div class="lc-row"><span class="lc-tag">주제</span><span class="lc-val">' + (e.ss||'-') + (e.sn?' <b>(#'+e.sn+')</b>':'') + '</span></div>' +
-      '<div class="lc-row"><span class="lc-tag g">경화제</span><span class="lc-val">' + (e.hs||'-') + (e.hn?' <b>(#'+e.hn+')</b>':'') + '</span></div>' +
-      '<div class="lc-row"><span class="lc-ratio">비율 ' + e.sr + ':' + e.hr + '</span>' + (e.mgr ? '<span class="lc-mgr">👤 ' + e.mgr + '</span>' : '') + '</div>' +
-    '</div>';
-  }).join('');
+  const q = (document.getElementById('list-search')?.value || '').toLowerCase();
+  const fl = q ? entries.filter(e => ((e.ss||'')+(e.sn||'')+(e.hs||'')+(e.hn||'')+(e.mgr||'')).toLowerCase().includes(q)) : entries;
+  const el = document.getElementById('list-body');
+  
+  if (!fl.length) { el.innerHTML = '<div style="text-align:center; padding:30px; color:#999;">데이터가 없습니다.</div>'; return; }
+
+  el.innerHTML = fl.map(e => `
+    <div class="list-card">
+      <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:11px; color:#666;">
+        <b>No.${e.num}</b> <span>${e.dt}</span> <button onclick="delE(${e.id})" style="border:none; background:none; font-size:16px;">×</button>
+      </div>
+      <div style="font-size:13px; margin-bottom:3px;">주제: <b>${e.ss || '미입력'}</b> ${e.sn ? '(#'+e.sn+')' : ''}</div>
+      <div style="font-size:13px;">경화: <b>${e.hs || '미입력'}</b> ${e.hn ? '(#'+e.hn+')' : ''}</div>
+      <div style="margin-top:8px; font-size:12px; color:var(--p); font-weight:700;">비율 ${e.sr}:${e.hr} | ${e.mgr || '담당자미상'}</div>
+    </div>
+  `).join('');
 }
 
-function delE(id) { entries = entries.filter(function(e) { return e.id !== id; }); entries.forEach(function(e, i) { e.num = i + 1; }); localStorage.setItem('sr_v5', JSON.stringify(entries)); updateBadge(); renderPreview(); renderList(); }
-function clearAll() { if (!entries.length) return; if (confirm('등록된 ' + entries.length + '개 항목을 모두 삭제할까요?')) { entries = []; localStorage.removeItem('sr_v5'); updateBadge(); renderPreview(); renderList(); } }
-function updateBadge() { var c = entries.length; var b = document.getElementById('badge'); if (c > 0) { b.style.display = 'flex'; b.textContent = c > 99 ? '99+' : c; } else b.style.display = 'none'; }
+function delE(id) { entries = entries.filter(e => e.id !== id); entries.forEach((e,i) => e.num = i+1); localStorage.setItem('sr_v_ocr', JSON.stringify(entries)); updateBadge(); renderList(); }
+function clearAll() { if(confirm("모든 데이터를 삭제할까요?")){ entries=[]; localStorage.removeItem('sr_v_ocr'); updateBadge(); renderList(); } }
+function updateBadge() { const b = document.getElementById('badge'); if(entries.length>0){ b.style.display='flex'; b.textContent=entries.length; } else b.style.display='none'; }
 
-function saveSettings() { localStorage.setItem('sr_gasUrl', document.getElementById('gas-url').value.trim()); toast('✓ 설정이 저장되었습니다'); }
-
-/* 엑셀 저장 (아이폰 호환) */
 function doExcel() {
-  if (!entries.length) { toast('등록된 항목이 없습니다'); return; }
-  var ws = [['번호','날짜시간','담당자','주제시리얼','주제넘버','경화제시리얼','경화제넘버','주제비율','경화제비율']];
-  entries.forEach(function(e) { ws.push([e.num, e.dt, e.mgr||'', e.ss||'', e.sn||'', e.hs||'', e.hn||'', e.sr, e.hr]); });
-  var wb = XLSX.utils.book_new(); var sh = XLSX.utils.aoa_to_sheet(ws);
-  sh['!cols'] = [{wch:6},{wch:18},{wch:10},{wch:20},{wch:8},{wch:20},{wch:8},{wch:8},{wch:8}];
-  XLSX.utils.book_append_sheet(wb, sh, '시리얼등록');
-  try {
-    var buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    var blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    var url = URL.createObjectURL(blob); var a = document.createElement('a'); a.href = url;
-    a.download = '시리얼기록_' + new Date().toISOString().slice(0, 10) + '.xlsx';
-    document.body.appendChild(a); a.click();
-    setTimeout(function() { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
-    toast('엑셀 파일이 다운로드 되었습니다.');
-  } catch(err) { toast('저장 실패: ' + err.message); }
+  if(!entries.length) return toast("데이터가 없습니다.");
+  const ws = [['번호','날짜','담당자','주제시리얼','주제넘버','경화제시리얼','경화제넘버','주제비율','경화제비율']];
+  entries.forEach(e => ws.push([e.num, e.dt, e.mgr, e.ss, e.sn, e.hs, e.hn, e.sr, e.hr]));
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(ws), 'Data');
+  XLSX.writeFile(wb, '시리얼기록.xlsx');
 }
 
-var toastTmr;
+let toastTmr;
 function toast(m) {
-  var t = document.getElementById('toast');
+  const t = document.getElementById('toast');
   t.textContent = m; t.classList.add('on');
   clearTimeout(toastTmr);
-  toastTmr = setTimeout(function() { t.classList.remove('on'); }, 2500);
+  toastTmr = setTimeout(() => t.classList.remove('on'), 2500);
 }
 </script>
 </body>
