@@ -72,4 +72,299 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:30px; h
 .list-tool { display:flex; gap:8px; padding:10px; background:var(--dk); }
 .list-search { flex:1; padding:10px; border-radius:8px; border:none; outline:none; font-size:14px; }
 .list-body { flex:1; padding:12px; overflow-y:auto; }
-.list-card { background:#fff; border:1px solid var(--bd); border-radius:10px; padding:14px; margin-bottom:12
+.list-card { background:#fff; border:1px solid var(--bd); border-radius:10px; padding:14px; margin-bottom:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+.list-actions { padding:10px; display:flex; background:var(--dk); }
+.act-btn { flex:1; padding:14px; background:var(--gn); color:#fff; border:none; border-radius:8px; font-weight:700; font-size:14px; }
+
+/* ════════ PAGE 3 — 설정 ════════ */
+.set-wrap { padding:14px; }
+.set-card { background:var(--wh); border:1px solid var(--bd); border-radius:12px; padding:14px; }
+.set-inp { width:100%; padding:12px; border:1px solid var(--bd); border-radius:8px; margin-top:8px; outline:none; }
+
+/* 카메라 뷰 (바코드 스캔 전용) */
+#cam-wrap { position:fixed; inset:0; background:#000; z-index:1000; display:none; flex-direction:column; }
+#cam-video { width:100%; height:100%; object-fit:cover; }
+.cam-hdr { padding:15px; display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.8); color:#fff; z-index:10; }
+.cam-box { position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:260px; height:120px; border:2px solid rgba(255,255,255,0.5); border-radius:8px; box-shadow:0 0 0 2000px rgba(0,0,0,0.5); }
+.laser { position:absolute; left:0; right:0; height:2px; background:#00d4ff; box-shadow:0 0 8px #00d4ff; animation:scan 1.5s infinite; }
+@keyframes scan { 0%,100%{top:10%;} 50%{top:90%;} }
+
+#toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.9); color:#fff; padding:12px 24px; border-radius:20px; font-size:14px; z-index:2000; opacity:0; transition:0.3s; pointer-events:none; }
+#toast.on { opacity:1; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="pages">
+    <div class="tab-page active" id="pg-main">
+      <div class="scroll-wrap">
+        <div class="top-bar">
+          <div class="clock" id="clock-el">--.--.--</div>
+          <input class="mgr-inp" id="mgr-inp" type="text" placeholder="담당자 이름">
+        </div>
+
+        <div class="sec-card">
+          <div class="sec-head">
+            <div class="sec-name">주제</div>
+            <button class="sec-btn" onclick="openCam('subject')">📷 바코드 스캔</button>
+          </div>
+          <div class="input-row">
+            <input class="input-field" id="s-input" type="text" placeholder="스캔 시 자동입력 (터치하여 직접 입력 가능)">
+          </div>
+        </div>
+
+        <div class="sec-card">
+          <div class="sec-head">
+            <div class="sec-name">경화제</div>
+            <button class="sec-btn" onclick="openCam('hardener')">📷 바코드 스캔</button>
+          </div>
+          <div class="input-row">
+            <input class="input-field" id="h-input" type="text" placeholder="스캔 시 자동입력 (터치하여 직접 입력 가능)">
+          </div>
+        </div>
+
+        <div class="ratio-card">
+          <div style="font-size:12px; font-weight:700; margin-bottom:12px; text-align:center; color:var(--mt);">배합 비율 설정</div>
+          <div class="prog-bar">
+            <div class="prog-s" id="prog-s" style="width:50%"><span id="p-s-txt">주제 50%</span></div>
+            <div class="prog-h" id="prog-h" style="width:50%"><span id="p-h-txt">경화제 50%</span></div>
+          </div>
+          <input type="range" id="sl-s" min="0" max="100" value="50" oninput="syncRatio(this.value)">
+        </div>
+
+        <button class="reg-btn" onclick="doSubmit()">데이터 등록 완료</button>
+      </div>
+    </div>
+
+    <div class="tab-page" id="pg-list">
+      <div class="list-tool">
+        <input class="list-search" id="list-search" type="text" placeholder="검색어 입력..." oninput="renderList()">
+        <button style="background:none; border:1px solid #fff; color:#fff; border-radius:8px; padding:0 12px; font-size:12px;" onclick="clearAll()">초기화</button>
+      </div>
+      <div class="list-body" id="list-body"></div>
+      <div class="list-actions">
+        <button class="act-btn" onclick="doExcel()">엑셀 다운로드</button>
+      </div>
+    </div>
+
+    <div class="tab-page" id="pg-set">
+      <div class="set-wrap">
+        <div class="set-card">
+          <div style="font-size:13px; font-weight:700; color:var(--dk);">구글 시트 연동 URL</div>
+          <input class="set-inp" id="gas-url" type="text" placeholder="https://script.google.com/macros/s/...">
+          <button class="reg-btn" style="margin-top:14px; padding:14px;" onclick="saveSettings()">설정 저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav id="nav">
+    <button class="nav-item active" onclick="goTab('main', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> 입력
+    </button>
+    <button class="nav-item" onclick="goTab('list', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg> 목록
+      <span class="badge" id="badge" style="display:none">0</span>
+    </button>
+    <button class="nav-item" onclick="goTab('set', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> 설정
+    </button>
+  </nav>
+</div>
+
+<div id="cam-wrap">
+  <div class="cam-hdr">
+    <span id="cam-title" style="font-weight:700; font-size:16px;">바코드 스캔</span>
+    <button onclick="closeCam()" style="background:none; border:none; color:#fff; font-size:16px; font-weight:700;">✕ 닫기</button>
+  </div>
+  <div style="flex:1; position:relative;">
+    <video id="cam-video" playsinline autoplay muted></video>
+    <div class="cam-box"><div class="laser"></div></div>
+    <div style="position:absolute; bottom:30px; width:100%; text-align:center; color:#fff; font-size:13px; font-weight:500; text-shadow:0 1px 3px rgba(0,0,0,0.8);">바코드를 사각형 안에 비춰주세요</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// 로컬 스토리지 데이터 (이전 데이터 구조 호환 유지)
+let entries = JSON.parse(localStorage.getItem('sr_v_unified') || '[]');
+let camTarget = '';
+let codeReader = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  clock(); setInterval(clock, 20000);
+  renderList(); updateBadge(); syncRatio(50);
+  document.getElementById('gas-url').value = localStorage.getItem('sr_gasUrl') || '';
+});
+
+function clock() {
+  const d = new Date();
+  document.getElementById('clock-el').textContent = `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+function syncRatio(val) {
+  const s = parseInt(val); const h = 100 - s;
+  document.getElementById('prog-s').style.width = s + '%'; document.getElementById('prog-h').style.width = h + '%';
+  document.getElementById('p-s-txt').textContent = s > 15 ? `주제 ${s}%` : `${s}%`;
+  document.getElementById('p-h-txt').textContent = h > 15 ? `경화제 ${h}%` : `${h}%`;
+}
+
+function goTab(tab, btn) {
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('pg-' + tab).classList.add('active');
+  btn.classList.add('active');
+  if(tab === 'list') renderList();
+}
+
+/* ★ 가장 빠르고 정확한 바코드 스캐너 엔진 (ZXing) 구동 */
+async function openCam(target) {
+  camTarget = target;
+  document.getElementById('cam-title').textContent = target === 'subject' ? '주제 바코드 스캔' : '경화제 바코드 스캔';
+  document.getElementById('cam-wrap').style.display = 'flex';
+
+  if (!codeReader) {
+    codeReader = new ZXing.BrowserMultiFormatReader();
+  }
+  
+  try {
+    const devices = await codeReader.listVideoInputDevices();
+    let deviceId = devices[0].deviceId;
+    
+    // 후면 카메라 우선 선택
+    for (const d of devices) {
+      if (d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('environment')) {
+        deviceId = d.deviceId; break;
+      }
+    }
+    
+    codeReader.decodeFromVideoDevice(deviceId, 'cam-video', (result, err) => {
+      if (result) {
+        if (navigator.vibrate) navigator.vibrate(80);
+        
+        // 스캔 결과를 단일 입력창에 즉시 반영
+        if (camTarget === 'subject') {
+          document.getElementById('s-input').value = result.getText();
+        } else {
+          document.getElementById('h-input').value = result.getText();
+        }
+        
+        closeCam();
+        toast("스캔 완료!");
+      }
+    });
+  } catch(e) {
+    toast("카메라 권한을 확인해주세요.");
+    closeCam();
+  }
+}
+
+function closeCam() {
+  if (codeReader) codeReader.reset(); // 비디오 스트림 종료
+  document.getElementById('cam-wrap').style.display = 'none';
+}
+
+/* 데이터 저장 */
+function doSubmit() {
+  const sv = document.getElementById('s-input').value.trim();
+  const hv = document.getElementById('h-input').value.trim();
+  
+  if (!sv || !hv) {
+    toast("주제와 경화제의 정보를 모두 입력해주세요.");
+    return;
+  }
+
+  const d = new Date();
+  const dt = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  const ratioS = parseInt(document.getElementById('sl-s').value);
+
+  const entry = {
+    id: Date.now(), 
+    num: entries.length + 1, 
+    dt: dt,
+    mgr: document.getElementById('mgr-inp').value.trim(),
+    ss: sv,  // 단일 입력값 저장
+    hs: hv,  // 단일 입력값 저장
+    sn: '',  // 구글 시트 호환성 유지를 위해 빈 값으로 전달
+    hn: '',  // 구글 시트 호환성 유지를 위해 빈 값으로 전달
+    sr: ratioS, 
+    hr: 100 - ratioS
+  };
+
+  entries.push(entry);
+  localStorage.setItem('sr_v_unified', JSON.stringify(entries));
+
+  // 필드 초기화
+  document.getElementById('s-input').value = '';
+  document.getElementById('h-input').value = '';
+
+  updateBadge(); renderList();
+  toast(`✓ ${entry.num}번 데이터가 등록되었습니다.`);
+}
+
+/* 목록 출력 */
+function renderList() {
+  const q = (document.getElementById('list-search')?.value || '').toLowerCase();
+  const fl = q ? entries.filter(e => ((e.ss||'')+(e.hs||'')+(e.mgr||'')).toLowerCase().includes(q)) : entries;
+  const el = document.getElementById('list-body');
+  
+  if (!fl.length) { el.innerHTML = '<div style="text-align:center; padding:40px; color:#999; font-size:14px;">저장된 데이터가 없습니다.</div>'; return; }
+
+  el.innerHTML = fl.map(e => `
+    <div class="list-card">
+      <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; color:#555;">
+        <span><b style="color:var(--p);">No.${e.num}</b> | ${e.dt}</span>
+        <button onclick="delE(${e.id})" style="border:none; background:none; font-size:18px; color:#999;">×</button>
+      </div>
+      <div style="font-size:14px; margin-bottom:4px;">주제: <b style="color:var(--tx);">${e.ss}</b></div>
+      <div style="font-size:14px; margin-bottom:8px;">경화: <b style="color:var(--tx);">${e.hs}</b></div>
+      <div style="font-size:13px; color:var(--gn); font-weight:700; background:#f0f9ff; padding:6px; border-radius:6px; display:inline-block;">
+        비율 ${e.sr}:${e.hr} <span style="color:#777; font-weight:400; margin-left:8px;">${e.mgr ? '👤 '+e.mgr : ''}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function delE(id) { 
+  entries = entries.filter(e => e.id !== id); 
+  entries.forEach((e,i) => e.num = i+1); 
+  localStorage.setItem('sr_v_unified', JSON.stringify(entries)); 
+  updateBadge(); renderList(); 
+}
+
+function clearAll() { 
+  if(confirm("모든 데이터를 삭제하시겠습니까?")){ 
+    entries=[]; localStorage.removeItem('sr_v_unified'); updateBadge(); renderList(); 
+  } 
+}
+
+function updateBadge() { 
+  const b = document.getElementById('badge'); 
+  if(entries.length>0){ b.style.display='flex'; b.textContent=entries.length; } else b.style.display='none'; 
+}
+
+function doExcel() {
+  if(!entries.length) return toast("다운로드 할 데이터가 없습니다.");
+  // 구글 시트와의 호환성을 위해 헤더와 구조는 기존과 동일하게 유지합니다.
+  const ws = [['번호','날짜','담당자','주제시리얼(넘버)','주제넘버(사용안함)','경화제시리얼(넘버)','경화제넘버(사용안함)','주제비율','경화제비율']];
+  entries.forEach(e => ws.push([e.num, e.dt, e.mgr, e.ss, '', e.hs, '', e.sr, e.hr]));
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(ws), 'Data');
+  XLSX.writeFile(wb, '시리얼기록_'+new Date().toISOString().slice(0, 10)+'.xlsx');
+}
+
+function saveSettings() { 
+  localStorage.setItem('sr_gasUrl', document.getElementById('gas-url').value.trim()); 
+  toast('설정이 저장되었습니다.'); 
+}
+
+let toastTmr;
+function toast(m) {
+  const t = document.getElementById('toast');
+  t.textContent = m; t.classList.add('on');
+  clearTimeout(toastTmr);
+  toastTmr = setTimeout(() => t.classList.remove('on'), 2500);
+}
+</script>
+</body>
+</html>
