@@ -7,9 +7,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f3d55">
-<title>시리얼(텍스트) 등록 시스템</title>
+<title>시리얼 등록 시스템</title>
 
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
@@ -40,324 +40,36 @@ html, body {
 .badge { position:absolute; top:5px; right:calc(50% - 22px); background:#e74c3c; color:#fff; font-size:9px; font-weight:700; min-width:16px; height:16px; border-radius:8px; display:flex; align-items:center; justify-content:center; }
 
 /* ════════ PAGE 1 — 입력 ════════ */
-.scroll-wrap { flex:1; padding:14px; display:flex; flex-direction:column; gap:12px; }
+.scroll-wrap { flex:1; padding:14px; display:flex; flex-direction:column; gap:14px; }
 .top-bar { display:flex; align-items:center; gap:10px; background:var(--wh); border:1px solid var(--bd); border-radius:12px; padding:10px 14px; }
 .clock { font-size:13px; color:var(--mt); font-weight:500; white-space:nowrap; }
 .mgr-inp { flex:1; border:1.5px solid var(--bd); border-radius:8px; background:var(--cd); padding:9px 12px; font-size:15px; color:var(--tx); outline:none; }
 .mgr-inp:focus { border-color:var(--p); background:#fff; }
 
-.sec-card { background:var(--wh); border:1px solid var(--bd); border-radius:12px; overflow:hidden; }
-.sec-head { display:flex; height:48px; }
-.sec-name { background:var(--dk); color:#fff; width:72px; display:flex; align-items:center; justify-content:center; font-weight:700; }
+.sec-card { background:var(--wh); border:1px solid var(--bd); border-radius:12px; overflow:hidden; box-shadow:0 2px 5px rgba(0,0,0,0.05); }
+.sec-head { display:flex; height:50px; }
+.sec-name { background:var(--dk); color:#fff; width:80px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; }
 .sec-btn { flex:1; background:var(--p); border:none; color:#fff; font-weight:700; font-size:15px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; }
 .sec-btn:active { background:var(--lt); }
 
-.input-row { display:flex; border-top:1px solid var(--bd); background:#fff; }
-.input-label { background:var(--cd); width:72px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:var(--dk); border-right:1px solid var(--bd); }
-.input-field { flex:1; border:none; padding:12px 14px; font-size:15px; color:var(--tx); outline:none; width: 100%; display:block;}
-.input-field:focus { background:#f0f8ff; border-left:2px solid var(--p); }
-.input-field::placeholder { color:#bbb; font-size:13px; }
+/* 단일 수동 입력창 */
+.input-row { display:flex; border-top:1px solid var(--bd); background:#fffbe6; }
+.input-field { flex:1; border:none; padding:15px 14px; font-size:16px; color:var(--tx); outline:none; width:100%; display:block; background:transparent; font-weight:500; }
+.input-field:focus { background:#fff; border-left:3px solid var(--p); }
+.input-field::placeholder { color:#aaa; font-size:14px; font-weight:400; }
 
-.ratio-card { background:var(--wh); border:1px solid var(--bd); border-radius:12px; padding:14px; }
-.prog-bar { display:flex; height:40px; border-radius:20px; overflow:hidden; background:#eee; margin-bottom:12px; }
-.prog-s { background:linear-gradient(90deg, #0f3d55, #1a5a7a); display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:700; transition:0.3s; }
-.prog-h { background:linear-gradient(90deg, #1e8a58, #27ae6e); display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:700; transition:0.3s; }
-input[type=range] { -webkit-appearance:none; width:100%; height:10px; border-radius:5px; background:var(--cd); margin:10px 0; }
-input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:28px; height:28px; border-radius:50%; background:var(--p); border:3px solid #fff; }
+.ratio-card { background:var(--wh); border:1px solid var(--bd); border-radius:12px; padding:14px; box-shadow:0 2px 5px rgba(0,0,0,0.05); }
+.prog-bar { display:flex; height:44px; border-radius:22px; overflow:hidden; background:#eee; margin-bottom:12px; }
+.prog-s { background:linear-gradient(90deg, #0f3d55, #1a5a7a); display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px; font-weight:700; transition:0.3s; }
+.prog-h { background:linear-gradient(90deg, #1e8a58, #27ae6e); display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px; font-weight:700; transition:0.3s; }
+input[type=range] { -webkit-appearance:none; width:100%; height:12px; border-radius:6px; background:var(--cd); margin:10px 0; outline:none; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:30px; height:30px; border-radius:50%; background:var(--p); border:4px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.3); }
 
-.reg-btn { width:100%; padding:16px; background:var(--dk); color:#fff; border:none; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer; }
+.reg-btn { width:100%; padding:18px; background:var(--dk); color:#fff; border:none; border-radius:12px; font-size:17px; font-weight:700; cursor:pointer; box-shadow:0 4px 15px rgba(15,61,85,0.3); }
+.reg-btn:active { transform:scale(0.98); background:var(--p); }
 
 /* ════════ PAGE 2 — 목록 ════════ */
 .list-tool { display:flex; gap:8px; padding:10px; background:var(--dk); }
-.list-search { flex:1; padding:10px; border-radius:8px; border:none; }
-.list-body { flex:1; padding:10px; overflow-y:auto; }
-.list-card { background:#fff; border:1px solid var(--bd); border-radius:10px; padding:12px; margin-bottom:10px; }
-.list-actions { padding:10px; display:flex; background:var(--dk); }
-.act-btn { flex:1; padding:12px; background:var(--gn); color:#fff; border:none; border-radius:8px; font-weight:700; }
-
-/* 카메라 뷰 (OCR 전용) */
-#cam-wrap { position:fixed; inset:0; background:#000; z-index:1000; display:none; flex-direction:column; }
-#cam-video { width:100%; height:100%; object-fit:cover; }
-.cam-hdr { padding:15px; display:flex; justify-content:space-between; background:rgba(0,0,0,0.8); color:#fff; }
-
-/* 텍스트 캡처 영역 디자인 */
-.text-box { position:absolute; top:40%; left:50%; transform:translate(-50%, -50%); width:280px; height:80px; border:2px solid #00d4ff; border-radius:8px; box-shadow:0 0 0 1000px rgba(0,0,0,0.6); }
-.ocr-btn { position:absolute; bottom:50px; left:50%; transform:translateX(-50%); background:#00d4ff; color:#000; padding:15px 30px; border-radius:30px; font-size:16px; font-weight:900; border:none; box-shadow:0 4px 15px rgba(0,212,255,0.4); cursor:pointer; }
-.ocr-btn:active { transform:translateX(-50%) scale(0.95); }
-
-#toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); color:#fff; padding:12px 24px; border-radius:20px; font-size:13px; z-index:2000; opacity:0; transition:0.3s; pointer-events:none; }
-#toast.on { opacity:1; }
-</style>
-</head>
-<body>
-<div id="app">
-  <div id="pages">
-    <div class="tab-page active" id="pg-main">
-      <div class="scroll-wrap">
-        <div class="top-bar">
-          <div class="clock" id="clock-el">--.--.--</div>
-          <input class="mgr-inp" id="mgr-inp" type="text" placeholder="담당자 이름">
-        </div>
-
-        <div class="sec-card">
-          <div class="sec-head">
-            <div class="sec-name">주제</div>
-            <button class="sec-btn" onclick="openCam('subject')">카메라로 글자 읽기</button>
-          </div>
-          <div class="input-row">
-            <div class="input-label" style="color:var(--p)">시리얼</div>
-            <input class="input-field" id="s-serial" type="text" placeholder="카메라로 읽거나 직접 입력">
-          </div>
-          <div class="input-row">
-            <div class="input-label">넘버</div>
-            <input class="input-field" id="s-num" type="text" placeholder="넘버 직접 입력">
-          </div>
-        </div>
-
-        <div class="sec-card">
-          <div class="sec-head">
-            <div class="sec-name">경화제</div>
-            <button class="sec-btn" onclick="openCam('hardener')">카메라로 글자 읽기</button>
-          </div>
-          <div class="input-row">
-            <div class="input-label" style="color:var(--p)">시리얼</div>
-            <input class="input-field" id="h-serial" type="text" placeholder="카메라로 읽거나 직접 입력">
-          </div>
-          <div class="input-row">
-            <div class="input-label">넘버</div>
-            <input class="input-field" id="h-num" type="text" placeholder="넘버 직접 입력">
-          </div>
-        </div>
-
-        <div class="ratio-card">
-          <div style="font-size:12px; font-weight:700; margin-bottom:10px;">비율 설정</div>
-          <div class="prog-bar">
-            <div class="prog-s" id="prog-s" style="width:50%"><span id="p-s-txt">주제 50%</span></div>
-            <div class="prog-h" id="prog-h" style="width:50%"><span id="p-h-txt">경화제 50%</span></div>
-          </div>
-          <input type="range" id="sl-s" min="0" max="100" value="50" oninput="syncRatio(this.value)">
-        </div>
-
-        <button class="reg-btn" onclick="doSubmit()">데이터 등록</button>
-      </div>
-    </div>
-
-    <div class="tab-page" id="pg-list">
-      <div class="list-tool">
-        <input class="list-search" id="list-search" type="text" placeholder="검색..." oninput="renderList()">
-        <button style="background:none; border:1px solid #fff; color:#fff; border-radius:8px; padding:0 10px;" onclick="clearAll()">초기화</button>
-      </div>
-      <div class="list-body" id="list-body"></div>
-      <div class="list-actions">
-        <button class="act-btn" onclick="doExcel()">엑셀 다운로드</button>
-      </div>
-    </div>
-  </div>
-
-  <nav id="nav">
-    <button class="nav-item active" onclick="goTab('main', this)">입력</button>
-    <button class="nav-item" onclick="goTab('list', this)">목록 <span class="badge" id="badge" style="display:none">0</span></button>
-  </nav>
-</div>
-
-<div id="cam-wrap">
-  <div class="cam-hdr">
-    <span id="cam-title">글자 인식 (OCR)</span>
-    <button onclick="closeCam()" style="background:none; border:none; color:#fff; font-size:16px;">✕ 닫기</button>
-  </div>
-  <div style="flex:1; position:relative; overflow:hidden;">
-    <video id="cam-video" playsinline autoplay muted></video>
-    <div class="text-box"></div>
-    <div style="position:absolute; top:calc(40% + 50px); width:100%; text-align:center; color:#fff; font-size:12px;">글자를 파란 박스 안에 맞추고 아래 버튼을 누르세요</div>
-    
-    <button class="ocr-btn" id="ocr-btn" onclick="captureAndRead()">📸 텍스트 읽기</button>
-  </div>
-</div>
-
-<div id="toast"></div>
-
-<script>
-let entries = JSON.parse(localStorage.getItem('sr_v_ocr') || '[]');
-let camTarget = '';
-let camStream = null;
-let isProcessing = false;
-
-document.addEventListener('DOMContentLoaded', () => {
-  clock(); setInterval(clock, 20000);
-  renderList(); updateBadge(); syncRatio(50);
-});
-
-function clock() {
-  const d = new Date();
-  document.getElementById('clock-el').textContent = `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-}
-
-function syncRatio(val) {
-  const s = parseInt(val); const h = 100 - s;
-  document.getElementById('prog-s').style.width = s + '%'; document.getElementById('prog-h').style.width = h + '%';
-  document.getElementById('p-s-txt').textContent = `주제 ${s}%`; document.getElementById('p-h-txt').textContent = `경화제 ${h}%`;
-}
-
-function goTab(tab, btn) {
-  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  document.getElementById('pg-' + tab).classList.add('active');
-  btn.classList.add('active');
-  if(tab === 'list') renderList();
-}
-
-/* 카메라 켜기 */
-async function openCam(target) {
-  camTarget = target;
-  document.getElementById('cam-wrap').style.display = 'flex';
-  document.getElementById('ocr-btn').textContent = "📸 텍스트 읽기";
-
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ 
-      video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } 
-    });
-    camStream = stream;
-    document.getElementById('cam-video').srcObject = stream;
-  } catch(e) {
-    toast("카메라 접근 권한이 없습니다.");
-    closeCam();
-  }
-}
-
-function closeCam() {
-  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
-  document.getElementById('cam-video').srcObject = null;
-  document.getElementById('cam-wrap').style.display = 'none';
-  isProcessing = false;
-}
-
-/* ★ Tesseract.js (OCR) 텍스트 분석 로직 ★ */
-async function captureAndRead() {
-  if (isProcessing) return;
-  isProcessing = true;
-  const btn = document.getElementById('ocr-btn');
-  btn.textContent = "⏳ 글자 분석 중...";
-  btn.style.background = "#f39c12";
-
-  try {
-    const video = document.getElementById('cam-video');
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
-    
-    // 비디오 프레임을 캔버스에 찍음
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    // Tesseract로 영어/숫자(eng) 인식 실행
-    // ※ 최초 1회 실행 시 인식 엔진 데이터를 다운로드 하므로 약 2~4초 소요될 수 있습니다.
-    const { data: { text } } = await Tesseract.recognize(
-      canvas,
-      'eng', 
-      { logger: m => console.log(m) } // 콘솔에서 진행률 확인 가능
-    );
-
-    // 인식된 텍스트에서 특수문자나 공백을 제거하고 숫자, 영어, 바(-)만 남김
-    const cleanText = text.replace(/[^a-zA-Z0-9-]/g, '').trim();
-
-    if (cleanText.length > 2) {
-      if (navigator.vibrate) navigator.vibrate(100);
-      
-      // 입력창에 값 세팅
-      if (camTarget === 'subject') {
-        document.getElementById('s-serial').value = cleanText;
-      } else {
-        document.getElementById('h-serial').value = cleanText;
-      }
-      
-      toast(`[인식 성공] ${cleanText}`);
-      closeCam();
-    } else {
-      toast("글자를 제대로 인식하지 못했습니다. 초점을 맞춰 다시 찍어주세요.");
-      btn.textContent = "📸 다시 찍기";
-      btn.style.background = "#00d4ff";
-    }
-
-  } catch (error) {
-    toast("텍스트 인식 오류가 발생했습니다.");
-    btn.textContent = "📸 다시 찍기";
-    btn.style.background = "#00d4ff";
-  }
-  
-  isProcessing = false;
-}
-
-/* 데이터 제출 로직 */
-function doSubmit() {
-  const ss = document.getElementById('s-serial').value.trim();
-  const sn = document.getElementById('s-num').value.trim();
-  const hs = document.getElementById('h-serial').value.trim();
-  const hn = document.getElementById('h-num').value.trim();
-  
-  if (!(ss || sn) || !(hs || hn)) {
-    toast("주제와 경화제의 시리얼 또는 넘버를 각각 1개 이상 입력하세요.");
-    return;
-  }
-
-  const d = new Date();
-  const dt = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-  const sv = parseInt(document.getElementById('sl-s').value);
-
-  const entry = {
-    id: Date.now(), num: entries.length + 1, dt: dt,
-    mgr: document.getElementById('mgr-inp').value.trim(),
-    ss: ss, sn: sn, hs: hs, hn: hn, sr: sv, hr: 100 - sv
-  };
-
-  entries.push(entry);
-  localStorage.setItem('sr_v_ocr', JSON.stringify(entries));
-
-  // 필드 초기화
-  document.getElementById('s-serial').value = ''; document.getElementById('s-num').value = '';
-  document.getElementById('h-serial').value = ''; document.getElementById('h-num').value = '';
-
-  updateBadge(); renderList();
-  toast("✓ 등록이 완료되었습니다.");
-}
-
-function renderList() {
-  const q = (document.getElementById('list-search')?.value || '').toLowerCase();
-  const fl = q ? entries.filter(e => ((e.ss||'')+(e.sn||'')+(e.hs||'')+(e.hn||'')+(e.mgr||'')).toLowerCase().includes(q)) : entries;
-  const el = document.getElementById('list-body');
-  
-  if (!fl.length) { el.innerHTML = '<div style="text-align:center; padding:30px; color:#999;">데이터가 없습니다.</div>'; return; }
-
-  el.innerHTML = fl.map(e => `
-    <div class="list-card">
-      <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:11px; color:#666;">
-        <b>No.${e.num}</b> <span>${e.dt}</span> <button onclick="delE(${e.id})" style="border:none; background:none; font-size:16px;">×</button>
-      </div>
-      <div style="font-size:13px; margin-bottom:3px;">주제: <b>${e.ss || '미입력'}</b> ${e.sn ? '(#'+e.sn+')' : ''}</div>
-      <div style="font-size:13px;">경화: <b>${e.hs || '미입력'}</b> ${e.hn ? '(#'+e.hn+')' : ''}</div>
-      <div style="margin-top:8px; font-size:12px; color:var(--p); font-weight:700;">비율 ${e.sr}:${e.hr} | ${e.mgr || '담당자미상'}</div>
-    </div>
-  `).join('');
-}
-
-function delE(id) { entries = entries.filter(e => e.id !== id); entries.forEach((e,i) => e.num = i+1); localStorage.setItem('sr_v_ocr', JSON.stringify(entries)); updateBadge(); renderList(); }
-function clearAll() { if(confirm("모든 데이터를 삭제할까요?")){ entries=[]; localStorage.removeItem('sr_v_ocr'); updateBadge(); renderList(); } }
-function updateBadge() { const b = document.getElementById('badge'); if(entries.length>0){ b.style.display='flex'; b.textContent=entries.length; } else b.style.display='none'; }
-
-function doExcel() {
-  if(!entries.length) return toast("데이터가 없습니다.");
-  const ws = [['번호','날짜','담당자','주제시리얼','주제넘버','경화제시리얼','경화제넘버','주제비율','경화제비율']];
-  entries.forEach(e => ws.push([e.num, e.dt, e.mgr, e.ss, e.sn, e.hs, e.hn, e.sr, e.hr]));
-  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(ws), 'Data');
-  XLSX.writeFile(wb, '시리얼기록.xlsx');
-}
-
-let toastTmr;
-function toast(m) {
-  const t = document.getElementById('toast');
-  t.textContent = m; t.classList.add('on');
-  clearTimeout(toastTmr);
-  toastTmr = setTimeout(() => t.classList.remove('on'), 2500);
-}
-</script>
-</body>
-</html>
+.list-search { flex:1; padding:10px; border-radius:8px; border:none; outline:none; font-size:14px; }
+.list-body { flex:1; padding:12px; overflow-y:auto; }
+.list-card { background:#fff; border:1px solid var(--bd); border-radius:10px; padding:14px; margin-bottom:12
