@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0f">
+<title>시리얼 등록</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap');
+
+:root {
+  --bg: #0a0a0f;
+  --surface: #111118;
+  --card: #14141e;
+  --border: #1e1e2e;
+  --accent: #00ff88;
+  --accent2: #00aaff;
+  --warn: #ff4466;
+  --amber: #ffaa00;
+  --text: #e8e8f0;
+  --muted: #5a5a7a;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  height:100%; width:100%;
+  background:var(--bg);
+  color:var(--text);
+  font-family:'DM Mono',monospace;
+  overflow:hidden;
+  position:fixed;
+}
+
+.app {
+  display:flex;
+  flex-direction:column;
+  height:100%;
+  padding-top:var(--safe-top);
+  padding-bottom:var(--safe-bot);
+}
+
+/* Header */
+.app-header {
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:14px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-shrink:0;
+}
+.logo { font-family:'Syne',sans-serif; font-weight:800; font-size:16px; color:var(--accent); }
+.logo span { color:var(--text); }
+.badge { font-size:11px; color:var(--muted); border:1px solid var(--border); padding:3px 10px; border-radius:20px; }
+.badge b { color:var(--accent); }
+
+/* Pages */
+.pages { flex:1; overflow:hidden; position:relative; }
+.page { position:absolute; inset:0; overflow-y:auto; -webkit-overflow-scrolling:touch; display:none; flex-direction:column; }
+.page.active { display:flex; }
+
+/* Bottom nav */
+.bottom-nav { background:var(--surface); border-top:1px solid var(--border); display:flex; flex-shrink:0; }
+.nav-btn {
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
+  padding:10px 0; background:none; border:none; color:var(--muted);
+  font-family:'DM Mono',monospace; font-size:9px; letter-spacing:1px;
+  cursor:pointer; transition:color 0.15s; position:relative;
+  touch-action:manipulation;
+}
+.nav-btn svg { width:22px; height:22px; }
+.nav-btn.active { color:var(--accent); }
+.nav-btn.active::before {
+  content:''; position:absolute; top:0; left:20%; right:20%;
+  height:2px; background:var(--accent); border-radius:0 0 2px 2px;
+}
+.nav-badge {
+  position:absolute; top:6px; right:calc(50% - 18px);
+  background:var(--accent); color:#000; font-size:9px; font-weight:700;
+  min-width:16px; height:16px; border-radius:8px;
+  display:flex; align-items:center; justify-content:center; padding:0 3px;
+}
+
+/* ── PAGE 1: SCANNER ── */
+.scanner-page { background:#000; }
+
+.camera-wrap { position:relative; width:100%; flex:1; background:#000; overflow:hidden; min-height:0; }
+#interactive { width:100%; height:100%; }
+#interactive video { width:100%; height:100%; object-fit:cover; display:block; }
+#interactive canvas.drawingBuffer { position:absolute; top:0; left:0; width:100%; height:100%; }
+
+.cam-idle {
+  position:absolute; inset:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:16px; background:#0a0a0f;
+}
+.idle-icon {
+  width:80px; height:80px; border-radius:50%;
+  background:rgba(255,255,255,0.04); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+}
+.cam-idle p { font-size:13px; color:var(--muted); text-align:center; line-height:1.7; }
+
+.scan-overlay { position:absolute; inset:0; pointer-events:none; display:none; }
+.scan-overlay.active { display:flex; align-items:center; justify-content:center; }
+.scan-dim { position:absolute; inset:0; background:rgba(0,0,0,0.5); }
+
+.scan-window {
+  position:relative; z-index:1;
+  width:72%; max-width:280px; aspect-ratio:2.5/1;
+}
+.scan-window::before,.scan-window::after,
+.scan-window > span::before,.scan-window > span::after {
+  content:''; position:absolute; width:28px; height:28px;
+  border-color:var(--accent); border-style:solid;
+}
+.scan-window::before  { top:0;    left:0;  border-width:3px 0 0 3px; border-radius:3px 0 0 0; }
+.scan-window::after   { top:0;    right:0; border-width:3px 3px 0 0; border-radius:0 3px 0 0; }
+.scan-window>span::before { bottom:0; left:0;  border-width:0 0 3px 3px; border-radius:0 0 0 3px; }
+.scan-window>span::after  { bottom:0; right:0; border-width:0 3px 3px 0; border-radius:0 0 3px 0; }
+
+.scan-cutout { position:absolute; inset:-1px; box-shadow:0 0 0 2000px rgba(0,0,0,0.5); border-radius:4px; }
+
+.scan-line-wrap { position:absolute; inset:8px; overflow:hidden; }
+.scan-line {
+  position:absolute; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  box-shadow:0 0 10px var(--accent),0 0 20px var(--accent);
+  animation:scanline 2s ease-in-out infinite;
+}
+@keyframes scanline { 0%{top:0%;opacity:0} 5%{opacity:1} 95%{opacity:1} 100%{top:100%;opacity:0} }
+
+.scan-hint {
+  position:absolute; z-index:2; bottom:-30px; left:50%; transform:translateX(-50%);
+  white-space:nowrap; font-size:11px; color:rgba(255,255,255,0.45); letter-spacing:1px;
+}
+
+.flash { position:absolute; inset:0; background:var(--accent); opacity:0; pointer-events:none; z-index:10; transition:opacity 0.05s; }
+.flash.active { opacity:0.3; }
+
+.scan-panel { background:var(--surface); border-top:1px solid var(--border); padding:14px 16px; flex-shrink:0; }
+
+.scan-result {
+  display:flex; align-items:center; gap:10px;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:12px 14px; margin-bottom:12px;
+  min-height:52px; transition:border-color 0.25s;
+}
+.scan-result.success  { border-color:var(--accent); }
+.scan-result.duplicate { border-color:var(--amber); }
+.scan-result.error    { border-color:var(--warn); }
+
+.result-dot { width:8px; height:8px; border-radius:50%; background:var(--border); flex-shrink:0; }
+.scan-result.success .result-dot  { background:var(--accent); box-shadow:0 0 8px var(--accent); }
+.scan-result.duplicate .result-dot { background:var(--amber); }
+.scan-result.error .result-dot    { background:var(--warn); }
+.result-text { flex:1; }
+
+.scan-btns { display:flex; gap:10px; }
+
+.btn {
+  font-family:'DM Mono',monospace; font-size:14px; padding:14px 18px;
+  border-radius:12px; border:1px solid var(--border);
+  cursor:pointer; transition:all 0.15s; letter-spacing:0.3px;
+  touch-action:manipulation; display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.btn-primary { flex:1; background:var(--accent); color:#000; border-color:var(--accent); font-weight:500; }
+.btn-primary:active { transform:scale(0.97); }
+.btn-stop    { flex:1; background:transparent; color:var(--warn); border-color:var(--warn); }
+.btn-stop:active { background:rgba(255,68,102,0.1); }
+.btn-icon    { background:var(--card); border-color:var(--border); color:var(--text); padding:14px 16px; }
+.btn-icon:active { opacity:0.6; }
+.btn-ghost   { background:transparent; color:var(--muted); border-color:var(--border); }
+
+/* ── PAGE 2: MANUAL ── */
+.manual-page { padding:24px 20px; gap:24px; }
+.section-label { font-size:10px; letter-spacing:3px; color:var(--muted); text-transform:uppercase; margin-bottom:10px; }
+.input-group { display:flex; flex-direction:column; gap:10px; }
+.input-field {
+  width:100%; background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:16px 18px; color:var(--text);
+  font-family:'DM Mono',monospace; font-size:16px; outline:none; transition:border-color 0.15s;
+}
+.input-field:focus { border-color:var(--accent2); }
+.input-field::placeholder { color:var(--muted); }
+.btn-full { width:100%; text-align:center; padding:16px; }
+
+/* ── PAGE 3: LIST ── */
+.list-page { gap:0; }
+.list-toolbar {
+  padding:14px 16px; border-bottom:1px solid var(--border);
+  display:flex; gap:10px; background:var(--surface); flex-shrink:0;
+}
+.search-input {
+  flex:1; background:var(--card); border:1px solid var(--border);
+  border-radius:10px; padding:10px 14px; color:var(--text);
+  font-family:'DM Mono',monospace; font-size:14px; outline:none;
+}
+.search-input:focus { border-color:var(--accent2); }
+.search-input::placeholder { color:var(--muted); }
+.btn-sm {
+  font-family:'DM Mono',monospace; font-size:11px; padding:8px 14px;
+  border-radius:10px; border:1px solid var(--border);
+  background:transparent; color:var(--muted); cursor:pointer;
+  touch-action:manipulation; white-space:nowrap;
+}
+.btn-sm:active { color:var(--warn); border-color:var(--warn); }
+
+.item-list { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.list-item {
+  display:flex; align-items:center; padding:14px 16px; gap:10px;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  animation:slideIn 0.2s ease;
+}
+@keyframes slideIn { from{opacity:0;transform:translateX(10px)} to{opacity:1;transform:translateX(0)} }
+.item-num    { font-size:10px; color:var(--muted); min-width:22px; text-align:right; }
+.item-serial { flex:1; font-size:13px; letter-spacing:0.5px; word-break:break-all; }
+.item-time   { font-size:10px; color:var(--muted); flex-shrink:0; }
+.item-del    {
+  background:none; border:none; color:var(--muted); font-size:22px;
+  padding:4px 8px; cursor:pointer; border-radius:6px; line-height:1;
+  touch-action:manipulation;
+}
+.item-del:active { color:var(--warn); background:rgba(255,68,102,0.1); }
+
+.empty-state {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:12px; padding:60px 20px; color:var(--muted); font-size:12px; opacity:0.5;
+}
+
+.export-bar {
+  padding:14px 16px; border-top:1px solid var(--border);
+  display:flex; gap:10px; background:var(--surface); flex-shrink:0;
+}
+.export-bar .btn { flex:1; text-align:center; font-size:12px; padding:12px; }
+
+/* ── MODAL (bottom sheet) ── */
+.modal-backdrop {
+  position:fixed; inset:0; background:rgba(0,0,0,0.8);
+  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  z-index:200; display:flex; align-items:flex-end;
+  padding-bottom:var(--safe-bot);
+}
+.modal-backdrop.hidden { display:none; }
+.modal {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:24px 24px 0 0; padding:12px 28px 36px; width:100%;
+  animation:sheetUp 0.3s cubic-bezier(0.34,1.2,0.64,1);
+}
+@keyframes sheetUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.modal-handle {
+  width:36px; height:4px; background:var(--border);
+  border-radius:2px; margin:0 auto 24px;
+}
+.modal-icon {
+  width:56px; height:56px; border-radius:50%;
+  margin:0 auto 16px; display:flex; align-items:center; justify-content:center;
+}
+.modal-icon.request { background:rgba(0,170,255,0.12); border:1px solid rgba(0,170,255,0.25); }
+.modal-icon.denied  { background:rgba(255,68,102,0.12); border:1px solid rgba(255,68,102,0.25); }
+.modal-icon.ok      { background:rgba(0,255,136,0.10); border:1px solid rgba(0,255,136,0.25); }
+.modal-icon.loading { background:rgba(90,90,122,0.15); border:1px solid var(--border); }
+.modal h2 { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; text-align:center; margin-bottom:10px; }
+.modal p  { font-size:13px; color:var(--muted); text-align:center; line-height:1.75; margin-bottom:24px; }
+.modal p b { color:var(--text); }
+.perm-badge { display:flex; align-items:center; justify-content:center; gap:8px; font-size:11px; color:var(--muted); margin-bottom:24px; }
+.perm-dot { width:7px; height:7px; border-radius:50%; }
+.perm-dot.granted { background:var(--accent); box-shadow:0 0 6px var(--accent); }
+.perm-dot.denied  { background:var(--warn); }
+.perm-dot.prompt  { background:var(--amber); }
+.modal-btns { display:flex; flex-direction:column; gap:10px; }
+.modal-btns .btn { width:100%; padding:16px; font-size:14px; }
+
+.spinner { width:24px; height:24px; border:2px solid var(--border); border-top-color:var(--accent2); border-radius:50%; animation:spin 0.7s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+
+/* Toast */
+.toast {
+  position:fixed; bottom:calc(78px + var(--safe-bot)); left:50%;
+  transform:translateX(-50%) translateY(16px);
+  background:var(--card); border:1px solid var(--border);
+  border-radius:24px; padding:10px 20px; font-size:12px; color:var(--text);
+  z-index:150; opacity:0; transition:all 0.25s; white-space:nowrap; pointer-events:none;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="app-header">
+    <div class="logo">SCAN<span>REG</span></div>
+    <div class="badge">등록 <b id="totalCount">0</b>개</div>
+  </header>
+
+  <div class="pages">
+
+    <!-- PAGE 1: SCANNER -->
+    <div class="page scanner-page active" id="page-scan">
+      <div class="camera-wrap">
+        <div id="interactive"></div>
+        <div class="cam-idle" id="camIdle">
+          <div class="idle-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+          </div>
+          <p>아래 버튼을 눌러<br>바코드 스캔을 시작하세요</p>
+        </div>
+        <div class="scan-overlay" id="scanOverlay">
+          <div class="scan-dim"></div>
+          <div class="scan-window">
+            <span></span>
+            <div class="scan-cutout"></div>
+            <div class="scan-line-wrap"><div class="scan-line"></div></div>
+            <div class="scan-hint">바코드를 프레임 안에 맞추세요</div>
+          </div>
+        </div>
+        <div class="flash" id="flash"></div>
+      </div>
+
+      <div class="scan-panel">
+        <div class="scan-result" id="resultBox">
+          <div class="result-dot"></div>
+          <div class="result-text">
+            <div id="resultSerial" style="font-size:12px;color:var(--muted)">대기 중...</div>
+          </div>
+        </div>
+        <div class="scan-btns">
+          <button class="btn btn-primary" id="btnStart" onclick="startScanner()">▶ 스캔 시작</button>
+          <button class="btn btn-stop" id="btnStop" onclick="stopScanner()" style="display:none">■ 중지</button>
+          <button class="btn btn-icon" id="btnTorch" onclick="toggleTorch()" style="display:none" title="플래시">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 2: MANUAL -->
+    <div class="page manual-page" id="page-manual">
+      <div>
+        <div class="section-label">시리얼 번호 직접 입력</div>
+        <div class="input-group">
+          <input type="text" class="input-field" id="manualInput"
+            placeholder="시리얼 번호를 입력하세요"
+            autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
+            onkeydown="if(event.key==='Enter') addManual()">
+          <button class="btn btn-primary btn-full" onclick="addManual()">+ 등록</button>
+        </div>
+      </div>
+      <div>
+        <div class="section-label">최근 등록 5개</div>
+        <div id="recentList" style="display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:12px;color:var(--muted)">아직 등록된 항목이 없습니다.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 3: LIST -->
+    <div class="page list-page" id="page-list">
+      <div class="list-toolbar">
+        <input type="text" class="search-input" id="searchInput" placeholder="🔍  검색..." oninput="renderList()">
+        <button class="btn-sm" onclick="clearAll()">전체삭제</button>
+      </div>
+      <div class="item-list" id="itemList">
+        <div class="empty-state">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <rect x="3" y="4" width="18" height="16" rx="2"/>
+            <path d="M7 8h10M7 12h6M7 16h4"/>
+          </svg>
+          <span>등록된 물품이 없습니다</span>
+        </div>
+      </div>
+      <div class="export-bar">
+        <button class="btn btn-ghost" onclick="exportCSV()">CSV 저장</button>
+        <button class="btn btn-ghost" onclick="copyAll()">복사</button>
+      </div>
+    </div>
+
+  </div><!-- .pages -->
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="nav-scan" onclick="switchTab('scan')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+        <circle cx="12" cy="13" r="3.5"/>
+      </svg>
+      스캔
+    </button>
+    <button class="nav-btn" id="nav-manual" onclick="switchTab('manual')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      직접입력
+    </button>
+    <button class="nav-btn" id="nav-list" onclick="switchTab('list')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <rect x="3" y="4" width="18" height="16" rx="2"/>
+        <path d="M7 8h10M7 12h6M7 16h4"/>
+      </svg>
+      목록
+      <span class="nav-badge" id="navBadge" style="display:none">0</span>
+    </button>
+  </nav>
+
+</div><!-- .app -->
+
+<!-- Permission modal -->
+<div class="modal-backdrop hidden" id="permModal">
+  <div class="modal" id="permModalContent"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let items = [];
+let scanning = false;
+let cooldown = false;
+let torchOn = false;
+let torchTrack = null;
+let currentTab = 'scan';
+
+/* ── TABS ── */
+function switchTab(tab) {
+  if (currentTab === 'scan' && tab !== 'scan' && scanning) stopScanner();
+  currentTab = tab;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  document.getElementById('nav-' + tab).classList.add('active');
+}
+
+/* ── MODAL ── */
+const permModal = document.getElementById('permModal');
+const permContent = document.getElementById('permModalContent');
+
+function showModal(html) {
+  permContent.innerHTML = '<div class="modal-handle"></div>' + html;
+  permModal.classList.remove('hidden');
+}
+function hideModal() { permModal.classList.add('hidden'); }
+
+function modalChecking() {
+  showModal(`
+    <div class="modal-icon loading"><div class="spinner"></div></div>
+    <h2>확인 중...</h2>
+    <p>카메라 권한 상태를 확인하고 있습니다.</p>
+  `);
+}
+function modalRequest() {
+  showModal(`
+    <div class="modal-icon request">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#00aaff" stroke-width="2">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+        <circle cx="12" cy="13" r="4"/>
+      </svg>
+    </div>
+    <h2>카메라 권한 필요</h2>
+    <p>바코드 스캔을 위해 <b>카메라 접근 권한</b>이 필요합니다.<br>
+    팝업에서 <b>"허용"</b>을 탭해주세요.</p>
+    <div class="perm-badge"><div class="perm-dot prompt"></div>권한 요청 대기 중</div>
+    <div class="modal-btns">
+      <button class="btn btn-primary" onclick="requestAndStart()">권한 허용 후 시작</button>
+      <button class="btn btn-ghost" onclick="hideModal()">취소</button>
+    </div>
+  `);
+}
+function modalDenied() {
+  showModal(`
+    <div class="modal-icon denied">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ff4466" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+      </svg>
+    </div>
+    <h2>카메라 접근 차단됨</h2>
+    <p>카메라 권한이 <b>거부</b>된 상태입니다.<br>
+    브라우저 설정에서 이 사이트의<br>카메라 권한을 <b>허용</b>으로 변경 후<br>새로고침 해주세요.</p>
+    <div class="perm-badge"><div class="perm-dot denied"></div>접근 차단됨</div>
+    <div class="modal-btns">
+      <button class="btn btn-primary" onclick="location.reload()">새로고침</button>
+      <button class="btn btn-ghost" onclick="hideModal()">닫기</button>
+    </div>
+  `);
+}
+function modalGranted() {
+  showModal(`
+    <div class="modal-icon ok">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+    <h2>권한 허용됨</h2>
+    <p>카메라 접근이 <b>허용</b>되었습니다.<br>스캔을 시작합니다...</p>
+    <div class="perm-badge"><div class="perm-dot granted"></div>카메라 접근 허용됨</div>
+  `);
+  setTimeout(hideModal, 1100);
+}
+function modalError(msg) {
+  showModal(`
+    <div class="modal-icon denied">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ff4466" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+    <h2>카메라 오류</h2>
+    <p>${msg}</p>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="hideModal()">닫기</button>
+    </div>
+  `);
+}
+
+/* ── PERMISSION ── */
+async function checkPermission() {
+  if (navigator.permissions?.query) {
+    try {
+      const r = await navigator.permissions.query({ name: 'camera' });
+      return r.state;
+    } catch { return 'prompt'; }
+  }
+  return 'prompt';
+}
+
+async function requestAndStart() {
+  hideModal();
+  modalChecking();
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
+    stream.getTracks().forEach(t => t.stop());
+    modalGranted();
+    setTimeout(launchQuagga, 1200);
+  } catch (err) {
+    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') modalDenied();
+    else modalError(err.message || '알 수 없는 오류');
+  }
+}
+
+/* ── SCANNER ── */
+async function startScanner() {
+  modalChecking();
+  const state = await checkPermission();
+  if (state === 'denied') { modalDenied(); return; }
+  if (state === 'prompt') { modalRequest(); return; }
+  hideModal();
+  launchQuagga();
+}
+
+function launchQuagga() {
+  document.getElementById('camIdle').style.display = 'none';
+  document.getElementById('scanOverlay').classList.add('active');
+  document.getElementById('btnStart').style.display = 'none';
+  document.getElementById('btnStop').style.display = 'flex';
+
+  Quagga.init({
+    inputStream: {
+      name: 'Live', type: 'LiveStream',
+      target: document.querySelector('#interactive'),
+      constraints: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'environment' }
+    },
+    locator: { patchSize: 'medium', halfSample: true },
+    numOfWorkers: navigator.hardwareConcurrency || 2,
+    frequency: 12,
+    decoder: {
+      readers: [
+        'code_128_reader','ean_reader','ean_8_reader',
+        'code_39_reader','code_93_reader','upc_reader','upc_e_reader','i2of5_reader'
+      ]
+    },
+    locate: true
+  }, function(err) {
+    if (err) {
+      stopScanner();
+      if (err.name === 'NotAllowedError') modalDenied();
+      else modalError(err.message || '카메라 오류');
+      return;
+    }
+    Quagga.start();
+    scanning = true;
+    // Check for torch
+    try {
+      const track = Quagga.CameraAccess.getActiveTrack();
+      if (track) {
+        const caps = track.getCapabilities?.() || {};
+        if (caps.torch) {
+          torchTrack = track;
+          document.getElementById('btnTorch').style.display = 'flex';
+        }
+      }
+    } catch(e) {}
+  });
+
+  Quagga.onDetected(onDetected);
+}
+
+function stopScanner() {
+  try { Quagga.offDetected(onDetected); Quagga.stop(); } catch(e) {}
+  scanning = false; torchTrack = null; torchOn = false;
+  document.getElementById('camIdle').style.display = 'flex';
+  document.getElementById('scanOverlay').classList.remove('active');
+  document.getElementById('btnStart').style.display = 'flex';
+  document.getElementById('btnStop').style.display = 'none';
+  document.getElementById('btnTorch').style.display = 'none';
+  const btn = document.getElementById('btnTorch');
+  btn.style.color = ''; btn.style.borderColor = '';
+}
+
+function onDetected(result) {
+  const code = result.codeResult.code;
+  if (!code || cooldown) return;
+  cooldown = true;
+  setTimeout(() => { cooldown = false; }, 1800);
+  if (navigator.vibrate) navigator.vibrate(60);
+  flashEffect();
+  addSerial(code);
+}
+
+function flashEffect() {
+  const f = document.getElementById('flash');
+  f.classList.add('active');
+  setTimeout(() => f.classList.remove('active'), 100);
+}
+
+async function toggleTorch() {
+  if (!torchTrack) return;
+  try {
+    torchOn = !torchOn;
+    await torchTrack.applyConstraints({ advanced: [{ torch: torchOn }] });
+    const btn = document.getElementById('btnTorch');
+    btn.style.color = torchOn ? 'var(--amber)' : '';
+    btn.style.borderColor = torchOn ? 'var(--amber)' : '';
+  } catch(e) {}
+}
+
+/* ── ADD SERIAL ── */
+function addSerial(code) {
+  code = code.trim().toUpperCase();
+  if (!code) return;
+  if (items.find(i => i.serial === code)) {
+    showResult(code, 'duplicate', '⚠ 이미 등록된 시리얼');
+    showToast('⚠ 중복 항목입니다');
+    return;
+  }
+  const now = new Date();
+  items.unshift({
+    id: Date.now(), serial: code,
+    time: now.toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit', second:'2-digit' })
+  });
+  showResult(code, 'success', '✓ 등록 완료');
+  updateCount(); renderList(); renderRecent();
+  showToast('✓ 등록: ' + code);
+}
+
+function addManual() {
+  const input = document.getElementById('manualInput');
+  if (!input.value.trim()) return;
+  addSerial(input.value);
+  input.value = '';
+  input.focus();
+}
+
+function showResult(code, type, msg) {
+  const box = document.getElementById('resultBox');
+  const el = document.getElementById('resultSerial');
+  box.className = 'scan-result ' + type;
+  el.style.cssText = '';
+  el.innerHTML = `<div style="font-size:14px;margin-bottom:2px">${code}</div><div style="font-size:10px;color:var(--muted)">${msg}</div>`;
+}
+
+function updateCount() {
+  const c = items.length;
+  document.getElementById('totalCount').textContent = c;
+  const b = document.getElementById('navBadge');
+  if (c > 0) { b.style.display = 'flex'; b.textContent = c > 99 ? '99+' : c; }
+  else b.style.display = 'none';
+}
+
+/* ── RENDER ── */
+function renderList() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const filtered = q ? items.filter(i => i.serial.toLowerCase().includes(q)) : items;
+  const el = document.getElementById('itemList');
+  if (!filtered.length) {
+    el.innerHTML = `<div class="empty-state">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+        <rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h6M7 16h4"/>
+      </svg>
+      <span>${q ? '검색 결과 없음' : '등록된 물품이 없습니다'}</span>
+    </div>`;
+    return;
+  }
+  el.innerHTML = filtered.map(item => `
+    <div class="list-item">
+      <div class="item-num">${String(items.indexOf(item)+1).padStart(2,'0')}</div>
+      <div class="item-serial">${hl(item.serial, q)}</div>
+      <div class="item-time">${item.time}</div>
+      <button class="item-del" onclick="deleteItem(${item.id})">×</button>
+    </div>
+  `).join('');
+}
+
+function renderRecent() {
+  const el = document.getElementById('recentList');
+  const r = items.slice(0, 5);
+  if (!r.length) { el.innerHTML = '<div style="font-size:12px;color:var(--muted)">아직 등록된 항목이 없습니다.</div>'; return; }
+  el.innerHTML = r.map(item => `
+    <div style="display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px">
+      <div style="width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0"></div>
+      <div style="flex:1;font-size:13px">${item.serial}</div>
+      <div style="font-size:10px;color:var(--muted)">${item.time}</div>
+    </div>
+  `).join('');
+}
+
+function hl(text, q) {
+  if (!q) return text;
+  const i = text.toLowerCase().indexOf(q);
+  if (i < 0) return text;
+  return text.slice(0,i) + `<span style="color:var(--accent);background:rgba(0,255,136,0.12)">${text.slice(i,i+q.length)}</span>` + text.slice(i+q.length);
+}
+
+function deleteItem(id) {
+  items = items.filter(i => i.id !== id);
+  updateCount(); renderList(); renderRecent();
+}
+
+function clearAll() {
+  if (!items.length) return;
+  if (confirm(`등록된 ${items.length}개 항목을 모두 삭제할까요?`)) {
+    items = []; updateCount(); renderList(); renderRecent();
+  }
+}
+
+/* ── EXPORT ── */
+function exportCSV() {
+  if (!items.length) { showToast('등록된 항목이 없습니다'); return; }
+  const rows = ['번호,시리얼번호,등록시각', ...items.map((it,i) => `${i+1},${it.serial},${it.time}`)];
+  const blob = new Blob(['\uFEFF'+rows.join('\n')], { type:'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `serial_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function copyAll() {
+  if (!items.length) { showToast('등록된 항목이 없습니다'); return; }
+  navigator.clipboard.writeText(items.map(i => i.serial).join('\n'))
+    .then(() => showToast('✓ 클립보드에 복사되었습니다'))
+    .catch(() => showToast('복사 실패'));
+}
+
+/* ── TOAST ── */
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* prevent pull-to-refresh on camera */
+document.getElementById('page-scan').addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+</script>
+</body>
+</html>
