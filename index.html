@@ -37,59 +37,46 @@ html, body {
 #nav { display:flex; flex-shrink:0; background:var(--dk); border-top:2px solid var(--p); height:56px; }
 .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; background:none; border:none; color:rgba(255,255,255,0.4); font-weight:700; cursor:pointer; font-size:10px; }
 .nav-item.active { color:#fff; border-top:3px solid #fff; margin-top:-2px; }
-.badge { position:absolute; top:4px; right:calc(50% - 20px); background:#e74c3c; color:#fff; font-size:9px; font-weight:700; min-width:14px; height:14px; border-radius:7px; display:flex; align-items:center; justify-content:center; }
+.badge { position:absolute; top:4px; right:calc(50% - 22px); background:#e74c3c; color:#fff; font-size:9px; font-weight:700; min-width:14px; height:14px; border-radius:7px; display:flex; align-items:center; justify-content:center; }
 
-/* ════════ PAGE 1 — 입력 (비율 축소) ════════ */
+/* ════════ PAGE 1 — 입력 ════════ */
 .scroll-wrap { flex:1; padding:10px; display:flex; flex-direction:column; gap:10px; }
-.top-bar { display:flex; align-items:center; gap:8px; background:var(--wh); border:1px solid var(--bd); border-radius:10px; padding:8px 12px; }
-.clock { font-size:12px; color:var(--mt); font-weight:500; white-space:nowrap; }
-.mgr-inp { flex:1; border:1.5px solid var(--bd); border-radius:6px; background:var(--cd); padding:8px 10px; font-size:14px; color:var(--tx); outline:none; }
-.mgr-inp:focus { border-color:var(--p); background:#fff; }
+.top-bar { display:flex; align-items:center; gap:6px; background:var(--wh); border:1px solid var(--bd); border-radius:10px; padding:8px 10px; }
+.clock { font-size:11px; color:var(--mt); font-weight:500; white-space:nowrap; }
+.mgr-inp { flex:1.5; border:1.5px solid var(--bd); border-radius:6px; background:var(--cd); padding:8px; font-size:13px; color:var(--tx); outline:none; }
+.qty-inp { flex:1; border:1.5px solid var(--bd); border-radius:6px; background:#fffbe6; padding:8px; font-size:13px; color:var(--tx); outline:none; }
+.mgr-inp:focus, .qty-inp:focus { border-color:var(--p); background:#fff; }
 
 .sec-card { background:var(--wh); border:1px solid var(--bd); border-radius:10px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
-.sec-head { display:flex; height:40px; }
+.sec-head { display:flex; height:38px; }
 .sec-name { background:var(--dk); color:#fff; width:66px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; }
 .sec-btn { flex:1; background:var(--p); border:none; color:#fff; font-weight:700; font-size:13px; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; }
-.sec-btn:active { background:var(--lt); }
 
-/* 수동 입력창 비율 최적화 */
-.input-row { display:flex; border-top:1px solid var(--bd); background:#fffbe6; }
-.input-row.w { background:#fff; }
-.input-label { background:var(--cd); width:66px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--dk); border-right:1px solid var(--bd); }
-.input-field { flex:1; border:none; padding:10px 12px; font-size:14px; color:var(--tx); outline:none; width:100%; display:block; background:transparent; font-weight:500; }
-.input-field:focus { background:#fff; border-left:3px solid var(--p); }
-.input-field::placeholder { color:#aaa; font-size:12px; font-weight:400; }
+.input-row { display:flex; border-top:1px solid var(--bd); }
+.input-label { background:var(--cd); width:66px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:var(--dk); border-right:1px solid var(--bd); flex-shrink:0; }
+.input-field { flex:1; border:none; padding:8px 10px; font-size:14px; color:var(--tx); outline:none; background:#fff; }
+.input-field::placeholder { color:#ccc; font-size:12px; }
 
-.ratio-card { background:var(--wh); border:1px solid var(--bd); border-radius:10px; padding:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
-.prog-bar { display:flex; height:32px; border-radius:16px; overflow:hidden; background:#eee; margin-bottom:8px; }
-.prog-s { background:linear-gradient(90deg, #0f3d55, #1a5a7a); display:flex; align-items:center; justify-content:center; color:#fff; font-size:11px; font-weight:700; transition:0.3s; }
-.prog-h { background:linear-gradient(90deg, #1e8a58, #27ae6e); display:flex; align-items:center; justify-content:center; color:#fff; font-size:11px; font-weight:700; transition:0.3s; }
-input[type=range] { -webkit-appearance:none; width:100%; height:8px; border-radius:4px; background:var(--cd); margin:8px 0; outline:none; }
-input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:24px; height:24px; border-radius:50%; background:var(--p); border:3px solid #fff; box-shadow:0 2px 5px rgba(0,0,0,0.3); }
+.ratio-card { background:var(--wh); border:1px solid var(--bd); border-radius:10px; padding:12px; }
+.prog-bar { display:flex; height:30px; border-radius:15px; overflow:hidden; background:#eee; margin-bottom:8px; }
+.prog-s { background:linear-gradient(90deg, #0f3d55, #1a5a7a); display:flex; align-items:center; justify-content:center; color:#fff; font-size:10px; font-weight:700; transition:0.3s; }
+.prog-h { background:linear-gradient(90deg, #1e8a58, #27ae6e); display:flex; align-items:center; justify-content:center; color:#fff; font-size:10px; font-weight:700; transition:0.3s; }
+input[type=range] { -webkit-appearance:none; width:100%; height:8px; border-radius:4px; background:var(--cd); margin:6px 0; outline:none; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:22px; height:22px; border-radius:50%; background:var(--p); border:3px solid #fff; }
 
-.reg-btn { width:100%; padding:14px; background:var(--dk); color:#fff; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 3px 10px rgba(15,61,85,0.3); }
-.reg-btn:active { transform:scale(0.98); background:var(--p); }
+.reg-btn { width:100%; padding:14px; background:var(--dk); color:#fff; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; }
 
 /* ════════ PAGE 2 — 목록 ════════ */
-.list-tool { display:flex; gap:8px; padding:10px; background:var(--dk); }
-.list-search { flex:1; padding:8px 10px; border-radius:6px; border:none; outline:none; font-size:13px; }
+.list-search { padding:8px 10px; border-radius:6px; border:none; outline:none; font-size:13px; flex:1; }
 .list-body { flex:1; padding:10px; overflow-y:auto; }
-.list-card { background:#fff; border:1px solid var(--bd); border-radius:8px; padding:12px; margin-bottom:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
-.list-actions { padding:10px; display:flex; background:var(--dk); }
-.act-btn { flex:1; padding:12px; background:var(--gn); color:#fff; border:none; border-radius:6px; font-weight:700; font-size:13px; }
+.list-card { background:#fff; border:1px solid var(--bd); border-radius:8px; padding:12px; margin-bottom:10px; }
+.data-row { display: flex; justify-content: space-between; font-size: 12px; margin-top: 5px; padding-top: 5px; border-top: 1px dashed #eee; color: #555; }
 
-/* ════════ PAGE 3 — 설정 ════════ */
-.set-wrap { padding:12px; }
-.set-card { background:var(--wh); border:1px solid var(--bd); border-radius:10px; padding:12px; }
-.set-inp { width:100%; padding:10px; border:1px solid var(--bd); border-radius:6px; margin-top:8px; outline:none; font-size:13px; }
-
-/* 카메라 뷰 (바코드 스캔 전용) */
+/* 카메라 뷰 */
 #cam-wrap { position:fixed; inset:0; background:#000; z-index:1000; display:none; flex-direction:column; }
 #cam-video { width:100%; height:100%; object-fit:cover; }
-.cam-hdr { padding:15px; display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.8); color:#fff; z-index:10; }
+.cam-hdr { padding:15px; display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.8); color:#fff; }
 .cam-box { position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:240px; height:120px; border:2px solid rgba(255,255,255,0.5); border-radius:8px; box-shadow:0 0 0 2000px rgba(0,0,0,0.5); }
-.laser { position:absolute; left:0; right:0; height:2px; background:#00d4ff; box-shadow:0 0 8px #00d4ff; animation:scan 1.5s infinite; }
-@keyframes scan { 0%,100%{top:10%;} 50%{top:90%;} }
 
 #toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.9); color:#fff; padding:10px 20px; border-radius:20px; font-size:13px; z-index:2000; opacity:0; transition:0.3s; pointer-events:none; }
 #toast.on { opacity:1; }
@@ -102,7 +89,8 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:24px; h
       <div class="scroll-wrap">
         <div class="top-bar">
           <div class="clock" id="clock-el">--.--.--</div>
-          <input class="mgr-inp" id="mgr-inp" type="text" placeholder="담당자 이름">
+          <input class="mgr-inp" id="mgr-inp" type="text" placeholder="담당자">
+          <input class="qty-inp" id="qty-total" type="number" placeholder="물량 입력">
         </div>
 
         <div class="sec-card">
@@ -110,14 +98,9 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:24px; h
             <div class="sec-name">주제</div>
             <button class="sec-btn" onclick="openCam('subject')">📷 바코드 스캔</button>
           </div>
-          <div class="input-row w">
-            <div class="input-label" style="color:var(--p)">시리얼</div>
-            <input class="input-field" id="s-serial" type="text" placeholder="스캔 시 자동입력 (직접입력 가능)">
-          </div>
-          <div class="input-row">
-            <div class="input-label">넘버</div>
-            <input class="input-field" id="s-num" type="text" placeholder="넘버 직접 입력">
-          </div>
+          <div class="input-row"><div class="input-label">시리얼</div><input class="input-field" id="s-serial" type="text" placeholder="스캔 또는 직접입력"></div>
+          <div class="input-row"><div class="input-label">넘버</div><input class="input-field" id="s-num" type="text" placeholder="넘버"></div>
+          <div class="input-row"><div class="input-label" style="color:var(--gn)">잔여(kg)</div><input class="input-field" id="s-rem" type="number" step="0.1" placeholder="주제 잔여량"></div>
         </div>
 
         <div class="sec-card">
@@ -125,18 +108,12 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:24px; h
             <div class="sec-name">경화제</div>
             <button class="sec-btn" onclick="openCam('hardener')">📷 바코드 스캔</button>
           </div>
-          <div class="input-row w">
-            <div class="input-label" style="color:var(--p)">시리얼</div>
-            <input class="input-field" id="h-serial" type="text" placeholder="스캔 시 자동입력 (직접입력 가능)">
-          </div>
-          <div class="input-row">
-            <div class="input-label">넘버</div>
-            <input class="input-field" id="h-num" type="text" placeholder="넘버 직접 입력">
-          </div>
+          <div class="input-row"><div class="input-label">시리얼</div><input class="input-field" id="h-serial" type="text" placeholder="스캔 또는 직접입력"></div>
+          <div class="input-row"><div class="input-label">넘버</div><input class="input-field" id="h-num" type="text" placeholder="넘버"></div>
+          <div class="input-row"><div class="input-label" style="color:var(--gn)">잔여(kg)</div><input class="input-field" id="h-rem" type="number" step="0.1" placeholder="경화제 잔여량"></div>
         </div>
 
         <div class="ratio-card">
-          <div style="font-size:11px; font-weight:700; margin-bottom:10px; text-align:center; color:var(--mt);">배합 비율 설정</div>
           <div class="prog-bar">
             <div class="prog-s" id="prog-s" style="width:50%"><span id="p-s-txt">주제 50%</span></div>
             <div class="prog-h" id="prog-h" style="width:50%"><span id="p-h-txt">경화제 50%</span></div>
@@ -149,65 +126,35 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:24px; h
     </div>
 
     <div class="tab-page" id="pg-list">
-      <div class="list-tool">
-        <input class="list-search" id="list-search" type="text" placeholder="검색어 입력..." oninput="renderList()">
-        <button style="background:none; border:1px solid #fff; color:#fff; border-radius:6px; padding:0 10px; font-size:11px;" onclick="clearAll()">초기화</button>
+      <div class="list-tool" style="display:flex; background:var(--dk); padding:10px; gap:8px;">
+        <input class="list-search" id="list-search" type="text" placeholder="검색어..." oninput="renderList()">
+        <button onclick="clearAll()" style="color:#fff; background:none; border:1px solid #fff; border-radius:5px; padding:0 8px; font-size:11px;">초기화</button>
       </div>
       <div class="list-body" id="list-body"></div>
-      <div class="list-actions">
-        <button class="act-btn" onclick="doExcel()">엑셀 다운로드</button>
-      </div>
-    </div>
-
-    <div class="tab-page" id="pg-set">
-      <div class="set-wrap">
-        <div class="set-card">
-          <div style="font-size:12px; font-weight:700; color:var(--dk);">구글 시트 연동 URL</div>
-          <input class="set-inp" id="gas-url" type="text" placeholder="https://script.google.com/macros/s/...">
-          <button class="reg-btn" style="margin-top:10px; padding:12px;" onclick="saveSettings()">설정 저장</button>
-        </div>
-      </div>
+      <div style="padding:10px; background:var(--dk);"><button onclick="doExcel()" style="width:100%; padding:12px; background:var(--gn); color:#fff; border:none; border-radius:8px; font-weight:700;">📊 엑셀 다운로드</button></div>
     </div>
   </div>
 
   <nav id="nav">
-    <button class="nav-item active" onclick="goTab('main', this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> 입력
-    </button>
-    <button class="nav-item" style="position:relative;" onclick="goTab('list', this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg> 목록
-      <span class="badge" id="badge" style="display:none">0</span>
-    </button>
-    <button class="nav-item" onclick="goTab('set', this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> 설정
-    </button>
+    <button class="nav-item active" onclick="goTab('main', this)">입력</button>
+    <button class="nav-item" onclick="goTab('list', this)">목록 <span class="badge" id="badge" style="display:none">0</span></button>
   </nav>
 </div>
 
 <div id="cam-wrap">
-  <div class="cam-hdr">
-    <span id="cam-title" style="font-weight:700; font-size:15px;">바코드 스캔</span>
-    <button onclick="closeCam()" style="background:none; border:none; color:#fff; font-size:15px; font-weight:700;">✕ 닫기</button>
-  </div>
-  <div style="flex:1; position:relative;">
-    <video id="cam-video" playsinline autoplay muted></video>
-    <div class="cam-box"><div class="laser"></div></div>
-    <div style="position:absolute; bottom:30px; width:100%; text-align:center; color:#fff; font-size:12px; font-weight:500; text-shadow:0 1px 3px rgba(0,0,0,0.8);">바코드를 사각형 안에 비춰주세요</div>
-  </div>
+  <div class="cam-hdr"><span>바코드 스캔</span><button onclick="closeCam()" style="color:#fff; background:none; border:none; font-size:15px;">✕ 닫기</button></div>
+  <div style="flex:1; position:relative;"><video id="cam-video" playsinline autoplay muted></video><div class="cam-box"></div></div>
 </div>
-
 <div id="toast"></div>
 
 <script>
-let entries = JSON.parse(localStorage.getItem('sr_v_fixed') || '[]');
-let camTarget = '';
+let entries = JSON.parse(localStorage.getItem('sr_v_v7') || '[]');
 let codeReader = null;
 let currentStream = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   clock(); setInterval(clock, 20000);
   renderList(); updateBadge(); syncRatio(50);
-  document.getElementById('gas-url').value = localStorage.getItem('sr_gasUrl') || '';
 });
 
 function clock() {
@@ -218,8 +165,7 @@ function clock() {
 function syncRatio(val) {
   const s = parseInt(val); const h = 100 - s;
   document.getElementById('prog-s').style.width = s + '%'; document.getElementById('prog-h').style.width = h + '%';
-  document.getElementById('p-s-txt').textContent = s > 15 ? `주제 ${s}%` : `${s}%`;
-  document.getElementById('p-h-txt').textContent = h > 15 ? `경화제 ${h}%` : `${h}%`;
+  document.getElementById('p-s-txt').textContent = `주제 ${s}%`; document.getElementById('p-h-txt').textContent = `경화제 ${h}%`;
 }
 
 function goTab(tab, btn) {
@@ -230,158 +176,94 @@ function goTab(tab, btn) {
   if(tab === 'list') renderList();
 }
 
-/* ★ 확실한 후면 카메라 강제 지정 및 스캔 엔진 (셀피 문제 완벽 차단) */
 async function openCam(target) {
-  camTarget = target;
-  document.getElementById('cam-title').textContent = target === 'subject' ? '주제 스캔' : '경화제 스캔';
   document.getElementById('cam-wrap').style.display = 'flex';
-
-  if (!codeReader) {
-    codeReader = new ZXing.BrowserMultiFormatReader();
-  }
-  
+  if (!codeReader) codeReader = new ZXing.BrowserMultiFormatReader();
   try {
-    // MediaDevices API를 사용해 OS 단에서 "후면 카메라(environment)"를 무조건적으로 요청
-    currentStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "environment" },
-      audio: false
-    });
-    
+    currentStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
     document.getElementById('cam-video').srcObject = currentStream;
-
-    // 스트림을 이용해 바로 디코딩 시작
-    codeReader.decodeFromStream(currentStream, 'cam-video', (result, err) => {
+    codeReader.decodeFromStream(currentStream, 'cam-video', (result) => {
       if (result) {
         if (navigator.vibrate) navigator.vibrate(80);
-        
-        // 스캔된 결과를 시리얼 입력창에 자동 기입
-        if (camTarget === 'subject') {
-          document.getElementById('s-serial').value = result.getText();
-        } else {
-          document.getElementById('h-serial').value = result.getText();
-        }
-        
-        closeCam();
-        toast("스캔 완료!");
+        document.getElementById(target === 'subject' ? 's-serial' : 'h-serial').value = result.getText();
+        closeCam(); toast("스캔 완료!");
       }
     });
-  } catch(e) {
-    toast("후면 카메라를 사용할 수 없습니다. 권한을 확인해주세요.");
-    closeCam();
-  }
+  } catch(e) { toast("카메라 권한 오류"); closeCam(); }
 }
 
 function closeCam() {
   if (codeReader) codeReader.reset();
-  if (currentStream) {
-    currentStream.getTracks().forEach(t => t.stop());
-    currentStream = null;
-  }
+  if (currentStream) currentStream.getTracks().forEach(t => t.stop());
   document.getElementById('cam-wrap').style.display = 'none';
 }
 
-/* 데이터 저장 */
 function doSubmit() {
   const ss = document.getElementById('s-serial').value.trim();
   const sn = document.getElementById('s-num').value.trim();
   const hs = document.getElementById('h-serial').value.trim();
   const hn = document.getElementById('h-num').value.trim();
   
-  // 조건: 주제(시리얼or넘버)와 경화제(시리얼or넘버)가 하나라도 존재해야 통과
-  if (!(ss || sn) || !(hs || hn)) {
-    toast("주제와 경화제의 정보를 모두 입력해주세요.");
-    return;
-  }
+  const qty = document.getElementById('qty-total').value.trim();
+  const remS = document.getElementById('s-rem').value.trim();
+  const remH = document.getElementById('h-rem').value.trim();
+
+  if (!(ss || sn) || !(hs || hn)) { toast("정보를 입력해주세요."); return; }
 
   const d = new Date();
-  const dt = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-  const ratioS = parseInt(document.getElementById('sl-s').value);
-
   const entry = {
-    id: Date.now(), 
-    num: entries.length + 1, 
-    dt: dt,
+    id: Date.now(), num: entries.length + 1,
+    dt: document.getElementById('clock-el').textContent,
     mgr: document.getElementById('mgr-inp').value.trim(),
-    ss: ss,
-    sn: sn,
-    hs: hs,
-    hn: hn,
-    sr: ratioS, 
-    hr: 100 - ratioS
+    qty: qty, remS: remS, remH: remH,
+    ss: ss, sn: sn, hs: hs, hn: hn,
+    sr: document.getElementById('sl-s').value, hr: 100 - document.getElementById('sl-s').value
   };
 
   entries.push(entry);
-  localStorage.setItem('sr_v_fixed', JSON.stringify(entries));
+  localStorage.setItem('sr_v_v7', JSON.stringify(entries));
 
-  // 입력 필드 초기화
-  document.getElementById('s-serial').value = ''; document.getElementById('s-num').value = '';
-  document.getElementById('h-serial').value = ''; document.getElementById('h-num').value = '';
-
-  updateBadge(); renderList();
-  toast(`✓ ${entry.num}번 데이터가 등록되었습니다.`);
+  ['s-serial', 's-num', 's-rem', 'h-serial', 'h-num', 'h-rem', 'qty-total'].forEach(id => document.getElementById(id).value = '');
+  updateBadge(); renderList(); toast(`✓ ${entry.num}번 등록 완료`);
 }
 
-/* 목록 출력 */
 function renderList() {
   const q = (document.getElementById('list-search')?.value || '').toLowerCase();
-  const fl = q ? entries.filter(e => ((e.ss||'')+(e.sn||'')+(e.hs||'')+(e.hn||'')+(e.mgr||'')).toLowerCase().includes(q)) : entries;
+  const fl = entries.filter(e => ((e.ss||'')+(e.sn||'')+(e.mgr||'')).toLowerCase().includes(q));
   const el = document.getElementById('list-body');
-  
-  if (!fl.length) { el.innerHTML = '<div style="text-align:center; padding:40px; color:#999; font-size:13px;">저장된 데이터가 없습니다.</div>'; return; }
+  if (!fl.length) { el.innerHTML = '<div style="text-align:center; padding:40px; color:#999; font-size:12px;">데이터가 없습니다.</div>'; return; }
 
   el.innerHTML = fl.map(e => `
     <div class="list-card">
-      <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:11px; color:#666;">
-        <span><b style="color:var(--p);">No.${e.num}</b> | ${e.dt}</span>
-        <button onclick="delE(${e.id})" style="border:none; background:none; font-size:16px; color:#999;">×</button>
+      <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:11px; color:#666;">
+        <span><b>No.${e.num}</b> | ${e.dt}</span>
+        <button onclick="delE(${e.id})" style="border:none; background:none; font-size:16px;">×</button>
       </div>
-      <div style="font-size:13px; margin-bottom:4px;">주제: <b style="color:var(--tx);">${e.ss || '미스캔'}</b> ${e.sn ? '(#'+e.sn+')' : ''}</div>
-      <div style="font-size:13px; margin-bottom:8px;">경화: <b style="color:var(--tx);">${e.hs || '미스캔'}</b> ${e.hn ? '(#'+e.hn+')' : ''}</div>
-      <div style="font-size:12px; color:var(--gn); font-weight:700; background:#f0f9ff; padding:6px; border-radius:6px; display:inline-block;">
-        비율 ${e.sr}:${e.hr} <span style="color:#777; font-weight:400; margin-left:8px;">${e.mgr ? '👤 '+e.mgr : ''}</span>
+      <div style="font-size:13px; margin-bottom:2px;">주제: <b>${e.ss || '직접입력'}</b> ${e.sn ? '(#'+e.sn+')' : ''}</div>
+      <div style="font-size:13px;">경화: <b>${e.hs || '직접입력'}</b> ${e.hn ? '(#'+e.hn+')' : ''}</div>
+      <div class="data-row">
+        <span>물량: <b>${e.qty || 0}</b></span>
+        <span>잔여: S <b>${e.remS || 0}</b>kg / H <b>${e.remH || 0}</b>kg</span>
       </div>
+      <div style="margin-top:5px; font-size:11px; color:var(--p); font-weight:700;">비율 ${e.sr}:${e.hr} | ${e.mgr || '미입력'}</div>
     </div>
   `).join('');
 }
 
-function delE(id) { 
-  entries = entries.filter(e => e.id !== id); 
-  entries.forEach((e,i) => e.num = i+1); 
-  localStorage.setItem('sr_v_fixed', JSON.stringify(entries)); 
-  updateBadge(); renderList(); 
-}
-
-function clearAll() { 
-  if(confirm("모든 데이터를 삭제하시겠습니까?")){ 
-    entries=[]; localStorage.removeItem('sr_v_fixed'); updateBadge(); renderList(); 
-  } 
-}
-
-function updateBadge() { 
-  const b = document.getElementById('badge'); 
-  if(entries.length>0){ b.style.display='flex'; b.textContent=entries.length; } else b.style.display='none'; 
-}
+function delE(id) { entries = entries.filter(e => e.id !== id); entries.forEach((e,i) => e.num = i+1); localStorage.setItem('sr_v_v7', JSON.stringify(entries)); updateBadge(); renderList(); }
+function clearAll() { if(confirm("전체 삭제하시겠습니까?")){ entries=[]; localStorage.removeItem('sr_v_v7'); updateBadge(); renderList(); } }
+function updateBadge() { const b = document.getElementById('badge'); if(entries.length>0){ b.style.display='flex'; b.textContent=entries.length; } else b.style.display='none'; }
 
 function doExcel() {
-  if(!entries.length) return toast("다운로드 할 데이터가 없습니다.");
-  const ws = [['번호','날짜','담당자','주제시리얼','주제넘버','경화제시리얼','경화제넘버','주제비율','경화제비율']];
-  entries.forEach(e => ws.push([e.num, e.dt, e.mgr, e.ss, e.sn, e.hs, e.hn, e.sr, e.hr]));
+  if(!entries.length) return toast("데이터가 없습니다.");
+  const ws = [['번호','날짜','담당자','물량','주제시리얼','주제넘버','주제잔여(kg)','경화제시리얼','경화제넘버','경화제잔여(kg)','주제비율','경화제비율']];
+  entries.forEach(e => ws.push([e.num, e.dt, e.mgr, e.qty, e.ss, e.sn, e.remS, e.hs, e.hn, e.remH, e.sr, e.hr]));
   const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(ws), 'Data');
-  XLSX.writeFile(wb, '시리얼기록_'+new Date().toISOString().slice(0, 10)+'.xlsx');
-}
-
-function saveSettings() { 
-  localStorage.setItem('sr_gasUrl', document.getElementById('gas-url').value.trim()); 
-  toast('설정이 저장되었습니다.'); 
+  XLSX.writeFile(wb, `시리얼기록_${new Date().getTime()}.xlsx`);
 }
 
 let toastTmr;
-function toast(m) {
-  const t = document.getElementById('toast');
-  t.textContent = m; t.classList.add('on');
-  clearTimeout(toastTmr);
-  toastTmr = setTimeout(() => t.classList.remove('on'), 2500);
-}
+function toast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toastTmr); toastTmr = setTimeout(() => t.classList.remove('on'), 2500); }
 </script>
 </body>
 </html>
