@@ -83,16 +83,6 @@ html, body {
 .top-row {
   display:flex; align-items:center; gap:10px;
 }
-.btn-input-main {
-  background:var(--primary);
-  color:#fff; font-family:'Noto Sans KR',sans-serif;
-  font-size:15px; font-weight:700;
-  padding:10px 20px; border-radius:8px; border:none;
-  cursor:pointer; touch-action:manipulation; flex-shrink:0;
-  transition:background 0.15s;
-}
-.btn-input-main:active { background:var(--primary-dark); }
-
 .datetime-box {
   font-size:13px; color:var(--text); font-weight:500; flex-shrink:0;
 }
@@ -188,20 +178,61 @@ html, body {
 .ratio-name { font-size:14px; font-weight:700; color:var(--primary-dark); }
 .ratio-val { font-size:14px; font-weight:700; color:var(--primary); }
 
+/* 비율 바 */
+.ratio-bar-wrap { margin-bottom:18px; }
+.ratio-bar-track {
+  display:flex; height:28px; border-radius:14px;
+  overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.12);
+  background:var(--card);
+}
+.ratio-bar-subject {
+  background:linear-gradient(90deg,#1a5a7a,#2478a0);
+  transition:width 0.25s cubic-bezier(0.34,1.2,0.64,1);
+  display:flex; align-items:center; justify-content:center;
+  min-width:0; overflow:hidden;
+}
+.ratio-bar-hardener {
+  background:linear-gradient(90deg,#4a9a7a,#2ecc8a);
+  transition:width 0.25s cubic-bezier(0.34,1.2,0.64,1);
+  display:flex; align-items:center; justify-content:center;
+  min-width:0; overflow:hidden;
+}
+.ratio-bar-labels {
+  display:flex; justify-content:space-between;
+  margin-top:7px; padding:0 2px;
+}
+.ratio-bar-lbl-left { font-size:12px; color:var(--primary-dark); }
+.ratio-bar-lbl-right { font-size:12px; color:#2a7a5a; }
+.ratio-bar-lbl-left b, .ratio-bar-lbl-right b { font-size:16px; }
+.ratio-val-sm { font-size:13px; font-weight:700; color:var(--primary); }
+
+/* 슬라이더 */
 input[type=range] {
-  -webkit-appearance:none; width:100%; height:6px;
-  background:var(--card); border-radius:3px; outline:none;
-  border:1px solid var(--border);
+  -webkit-appearance:none; width:100%; height:8px;
+  background:linear-gradient(to right, var(--primary) 0%, var(--primary) 50%, var(--card) 50%, var(--card) 100%);
+  border-radius:4px; outline:none; border:none;
 }
 input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance:none; width:24px; height:24px;
+  -webkit-appearance:none; width:28px; height:28px;
   border-radius:50%; background:var(--primary);
-  cursor:pointer; border:3px solid #fff;
-  box-shadow:0 2px 6px rgba(26,90,122,0.4);
+  cursor:pointer; border:4px solid #fff;
+  box-shadow:0 3px 10px rgba(26,90,122,0.35);
+  transition:transform 0.1s;
 }
-input[type=range]::-webkit-slider-runnable-track {
-  height:6px; border-radius:3px;
+input[type=range]::-webkit-slider-thumb:active { transform:scale(1.15); }
+input[type=range]::-webkit-slider-runnable-track { height:8px; border-radius:4px; }
+
+/* 제출 버튼 */
+.btn-submit-bottom {
+  width:100%; padding:16px; background:linear-gradient(135deg,#1a5a7a,#2478a0);
+  color:#fff; border:none; border-radius:14px;
+  font-family:'Noto Sans KR',sans-serif; font-size:16px; font-weight:700;
+  cursor:pointer; touch-action:manipulation;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  box-shadow:0 4px 16px rgba(26,90,122,0.35);
+  transition:all 0.15s; letter-spacing:1px;
 }
+.btn-submit-bottom:active { transform:scale(0.98); box-shadow:0 2px 8px rgba(26,90,122,0.25); }
 
 /* 목록 미리보기 박스 */
 .list-preview {
@@ -400,9 +431,8 @@ pre#gasCode { font-size:10px; color:var(--muted); line-height:1.7; white-space:p
     <div class="page main-page active" id="page-main">
       <div class="main-scroll">
 
-        <!-- 상단 행: 입력 버튼 + 날짜시간 + 담당자 -->
+        <!-- 상단 행: 날짜시간 + 담당자 -->
         <div class="top-row">
-          <button class="btn-input-main" onclick="submitEntry()">입력</button>
           <div class="datetime-box" id="datetimeBox">--.--.--</div>
           <input type="text" class="manager-input" id="managerInput" placeholder="담당자">
         </div>
@@ -454,21 +484,45 @@ pre#gasCode { font-size:10px; color:var(--muted); line-height:1.7; white-space:p
         <!-- 비율 슬라이더 -->
         <div class="ratio-card">
           <div class="ratio-title">비 율</div>
+
+          <!-- 통합 프로그레스 바 -->
+          <div class="ratio-bar-wrap">
+            <div class="ratio-bar-track">
+              <div class="ratio-bar-subject" id="ratioBarSubject" style="width:50%"></div>
+              <div class="ratio-bar-hardener" id="ratioBarHardener" style="width:50%"></div>
+            </div>
+            <div class="ratio-bar-labels">
+              <span class="ratio-bar-lbl-left">주제 <b id="subjectRatioVal">50</b>%</span>
+              <span class="ratio-bar-lbl-right">경화제 <b id="hardenerRatioVal">50</b>%</span>
+            </div>
+          </div>
+
+          <!-- 주제 슬라이더 -->
           <div class="ratio-item">
             <div class="ratio-label-row">
               <span class="ratio-name">주제</span>
-              <span class="ratio-val" id="subjectRatioVal">50</span>
+              <span class="ratio-val-sm" id="subjectRatioValSm">50%</span>
             </div>
-            <input type="range" id="subjectRatio" min="0" max="100" value="50" oninput="updateRatio()">
+            <input type="range" id="subjectRatio" min="0" max="100" value="50" oninput="updateRatioFromSubject(this.value)">
           </div>
-          <div class="ratio-item">
+
+          <!-- 경화제 슬라이더 -->
+          <div class="ratio-item" style="margin-bottom:0">
             <div class="ratio-label-row">
               <span class="ratio-name">경화제</span>
-              <span class="ratio-val" id="hardenerRatioVal">50</span>
+              <span class="ratio-val-sm" id="hardenerRatioValSm">50%</span>
             </div>
-            <input type="range" id="hardenerRatio" min="0" max="100" value="50" oninput="updateRatio()">
+            <input type="range" id="hardenerRatio" min="0" max="100" value="50" oninput="updateRatioFromHardener(this.value)">
           </div>
         </div>
+
+        <!-- 입력 버튼 (비율 아래) -->
+        <button class="btn-submit-bottom" onclick="submitEntry()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          입력 등록
+        </button>
 
         <!-- 목록 미리보기 -->
         <div class="list-preview" id="listPreview">
@@ -683,10 +737,36 @@ function switchTab(tab) {
 }
 
 /* ── RATIO ── */
-function updateRatio() {
-  document.getElementById('subjectRatioVal').textContent = document.getElementById('subjectRatio').value;
-  document.getElementById('hardenerRatioVal').textContent = document.getElementById('hardenerRatio').value;
+function updateRatioFromSubject(val) {
+  val = parseInt(val);
+  const other = 100 - val;
+  document.getElementById('hardenerRatio').value = other;
+  applyRatio(val, other);
 }
+
+function updateRatioFromHardener(val) {
+  val = parseInt(val);
+  const other = 100 - val;
+  document.getElementById('subjectRatio').value = other;
+  applyRatio(other, val);
+}
+
+function applyRatio(s, h) {
+  document.getElementById('subjectRatioVal').textContent = s;
+  document.getElementById('hardenerRatioVal').textContent = h;
+  document.getElementById('subjectRatioValSm').textContent = s + '%';
+  document.getElementById('hardenerRatioValSm').textContent = h + '%';
+  document.getElementById('ratioBarSubject').style.width = s + '%';
+  document.getElementById('ratioBarHardener').style.width = h + '%';
+  // 슬라이더 배경 업데이트
+  document.getElementById('subjectRatio').style.background =
+    \`linear-gradient(to right, var(--primary) 0%, var(--primary) \${s}%, var(--card) \${s}%, var(--card) 100%)\`;
+  document.getElementById('hardenerRatio').style.background =
+    \`linear-gradient(to right, #2ecc8a 0%, #2ecc8a \${h}%, var(--card) \${h}%, var(--card) 100%)\`;
+}
+
+// 초기 슬라이더 배경 세팅
+window.addEventListener('DOMContentLoaded', () => { applyRatio(50, 50); });
 
 /* ── CAMERA ── */
 function openCamera(target) {
