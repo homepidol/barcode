@@ -7,13 +7,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f3d55">
-<title>시리얼 등록 시스템</title>
-
-<!-- ZXing 라이브러리 (안정성을 위해 동적 로드 대신 직접 포함) -->
+<title>시리얼 등록</title>
 <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
-<!-- SheetJS (엑셀) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
 :root{
@@ -25,7 +21,6 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;width:100%;background:var(--bg);color:var(--txt);font-family:'Noto Sans KR',sans-serif;overflow:hidden;position:fixed;-webkit-text-size-adjust:100%;}
 
-/* ── 앱 쉘 ── */
 .app{display:flex;flex-direction:column;height:100%;padding-top:var(--st);padding-bottom:var(--sb);}
 .pages{flex:1;overflow:hidden;position:relative;min-height:0;}
 .pg{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;flex-direction:column;}
@@ -33,176 +28,255 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--txt);font-fami
 
 /* ── 하단 탭 ── */
 .bnav{background:var(--dk);display:flex;flex-shrink:0;border-top:2px solid var(--primary);}
-.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 calc(10px);background:none;border:none;color:rgba(255,255,255,0.4);font-family:'Noto Sans KR',sans-serif;font-size:10px;font-weight:700;cursor:pointer;position:relative;touch-action:manipulation;}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0;background:none;border:none;color:rgba(255,255,255,0.4);font-family:'Noto Sans KR',sans-serif;font-size:10px;font-weight:700;cursor:pointer;position:relative;touch-action:manipulation;}
 .nb svg{width:22px;height:22px;}
 .nb.on{color:#fff;}
 .nb.on::before{content:'';position:absolute;top:0;left:10%;right:10%;height:3px;background:#fff;border-radius:0 0 3px 3px;}
 .nbadge{position:absolute;top:6px;right:calc(50% - 22px);background:#e74c3c;color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;}
 
-/* ════════════════════
-   PAGE 1: 입력
-════════════════════ */
-.mscroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 12px 24px;display:flex;flex-direction:column;gap:10px;}
+/* ══ PAGE 1 ══ */
+.mscroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 12px 28px;display:flex;flex-direction:column;gap:10px;}
 
 .topbar{display:flex;align-items:center;gap:8px;background:var(--sur);border-radius:12px;padding:10px 12px;border:1px solid var(--bdr);}
 .clk{font-size:12px;color:var(--mut);font-weight:500;flex-shrink:0;white-space:nowrap;}
 .mgrinp{flex:1;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;padding:8px 10px;color:var(--txt);font-family:'Noto Sans KR',sans-serif;font-size:15px;outline:none;min-width:0;}
 .mgrinp:focus{border-color:var(--primary);}
+.mgrinp::placeholder{color:var(--mut);}
 
 .scard{background:var(--sur);border-radius:12px;border:1px solid var(--bdr);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
-.shdr{display:flex;height:48px;}
-.slbl{background:var(--dk);color:#fff;width:68px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;}
-.sbtn{flex:1;background:var(--primary);border:none;color:#fff;font-family:'Noto Sans KR',sans-serif;font-weight:700;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+.shdr{display:flex;height:50px;}
+.slbl{background:var(--dk);color:#fff;width:68px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;letter-spacing:1px;}
+.sbtn{flex:1;background:var(--primary);border:none;color:#fff;font-family:'Noto Sans KR',sans-serif;font-weight:700;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;touch-action:manipulation;}
 .sbtn:active{background:var(--lt);}
-.sbtn svg{width:18px;height:18px;flex-shrink:0;}
+.sbtn svg{width:18px;height:18px;}
 
-.srow{display:flex;align-items:center;gap:8px;padding:9px 12px;border-top:1px solid var(--bdr);min-height:38px;background:#fafafa;}
+.srow{display:flex;align-items:center;gap:8px;padding:9px 12px;border-top:1px solid var(--bdr);min-height:40px;background:#fafafa;}
 .sdot{width:8px;height:8px;border-radius:50%;background:var(--bdr);flex-shrink:0;}
-.srow.on {background:#f0f9ff;}
+.srow.on{background:#f0f9ff;}
 .srow.on .sdot{background:var(--primary);box-shadow:0 0 6px rgba(26,90,122,0.5);}
 .scode{font-size:13px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .srow.on .scode{color:var(--txt);font-weight:600;}
 
-.nrow{display:flex;border-top:1px solid var(--bdr);background:#fff;}
+.nrow{display:flex;border-top:1px solid var(--bdr);}
 .nlbl{background:var(--card);width:68px;padding:10px 0;text-align:center;font-size:13px;font-weight:700;border-right:1px solid var(--bdr);flex-shrink:0;color:var(--dk);display:flex;align-items:center;justify-content:center;}
-/* 수동 입력창 가시성 강화 */
 .ninp{flex:1;border:none;outline:none;padding:10px 12px;font-family:'Noto Sans KR',sans-serif;font-size:15px;color:var(--txt);background:#fffbe6;}
 .ninp:focus{background:#fff;border-left:2px solid var(--primary);}
-.ninp::placeholder{color:#b3b3b3; font-size:13px;}
+.ninp::placeholder{color:#bbb;font-size:13px;}
 
-/* 비율 카드 */
+/* 비율 */
 .rcard{background:var(--sur);border-radius:12px;border:1px solid var(--bdr);padding:14px 12px;}
 .rttl{font-size:10px;font-weight:700;color:var(--mut);letter-spacing:3px;text-align:center;margin-bottom:12px;}
 .ptrack{display:flex;height:44px;border-radius:22px;overflow:hidden;box-shadow:inset 0 2px 5px rgba(0,0,0,0.1);margin-bottom:8px;}
-.ps{background:linear-gradient(90deg,#0f3d55,#1a5a7a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;transition:width 0.25s;}
-.ph{background:linear-gradient(90deg,#1e8a58,#27ae6e);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;transition:width 0.25s;}
+.ps{background:linear-gradient(90deg,#0f3d55,#1a5a7a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;transition:width 0.25s cubic-bezier(.34,1.2,.64,1);overflow:hidden;min-width:0;}
+.ph{background:linear-gradient(90deg,#1e8a58,#27ae6e);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;transition:width 0.25s cubic-bezier(.34,1.2,.64,1);overflow:hidden;min-width:0;}
 .plbls{display:flex;justify-content:space-between;padding:0 4px;margin-bottom:10px;}
 .pls{font-size:13px;font-weight:700;color:var(--primary);}
 .plh{font-size:13px;font-weight:700;color:var(--green);}
 .slrow{margin-bottom:8px;}
+.slrow:last-child{margin-bottom:0;}
 .sltop{display:flex;justify-content:space-between;margin-bottom:6px;}
+.slname{font-size:13px;font-weight:700;}
 .slpct{font-size:13px;font-weight:700;}
 .slpct.s{color:var(--primary);}
 .slpct.h{color:var(--green);}
-input.rs,input.rh{-webkit-appearance:none;width:100%;height:12px;border-radius:6px;outline:none;background:#dde8f0;}
+input.rs,input.rh{-webkit-appearance:none;width:100%;height:12px;border-radius:6px;outline:none;border:none;cursor:pointer;}
 input.rs::-webkit-slider-thumb{-webkit-appearance:none;width:32px;height:32px;border-radius:50%;background:var(--primary);border:4px solid #fff;box-shadow:0 3px 10px rgba(26,90,122,0.3);}
 input.rh::-webkit-slider-thumb{-webkit-appearance:none;width:32px;height:32px;border-radius:50%;background:var(--green);border:4px solid #fff;box-shadow:0 3px 10px rgba(39,174,110,0.3);}
 
-/* 버튼 */
-.regbtn{width:100%;padding:17px;background:var(--dk);color:#fff;border:none;border-radius:14px;font-size:17px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 20px rgba(15,61,85,0.3);}
+/* 등록 버튼 */
+.regbtn{width:100%;padding:17px;background:var(--dk);color:#fff;border:none;border-radius:14px;font-family:'Noto Sans KR',sans-serif;font-size:17px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 20px rgba(15,61,85,0.3);touch-action:manipulation;}
 .regbtn:active{transform:scale(0.98);background:var(--primary);}
 
-/* ════════════════════
-   PAGE 2: 목록
-════════════════════ */
+/* 미리보기 */
+.pvbox{background:var(--dk);border-radius:12px;padding:12px;min-height:80px;}
+.pvempty{display:flex;align-items:center;justify-content:center;height:60px;color:rgba(255,255,255,0.3);font-size:12px;}
+.pve{padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.08);}
+.pve:last-child{border-bottom:none;padding-bottom:0;}
+.pvnum{color:rgba(255,255,255,0.4);font-size:11px;margin-bottom:2px;}
+.pvline{font-size:12px;color:#fff;line-height:1.9;}
+.pvline span{color:rgba(255,255,255,0.5);}
+
+/* ══ PAGE 2 ══ */
 .ltool{padding:10px 12px;background:var(--dk);display:flex;gap:8px;flex-shrink:0;border-bottom:2px solid var(--primary);}
-.lsrch{flex:1;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:10px;padding:9px 12px;color:#fff;font-size:15px;outline:none;}
-.ldelbtn{background:none;border:1px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.7);padding:0 12px;border-radius:10px;}
+.lsrch{flex:1;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:10px;padding:9px 12px;color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:15px;outline:none;}
+.lsrch::placeholder{color:rgba(255,255,255,0.4);}
+.ldelbtn{background:none;border:1px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.7);padding:0 14px;border-radius:10px;font-family:'Noto Sans KR',sans-serif;font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation;white-space:nowrap;}
 .lbody{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--bg);padding:8px;}
+.lempty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:50px 20px;color:var(--mut);font-size:13px;}
 .lcard{background:var(--sur);border-radius:12px;border:1px solid var(--bdr);padding:12px;margin-bottom:8px;}
 .lcTop{display:flex;align-items:center;gap:6px;margin-bottom:8px;}
-.lcnum{background:var(--primary);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;}
+.lcnum{background:var(--primary);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;flex-shrink:0;}
 .lctime{font-size:10px;color:var(--mut);flex:1;}
-.lcdel{background:none;border:none;color:var(--mut);font-size:22px;padding:0 4px;}
+.lcdel{background:none;border:none;color:var(--mut);font-size:22px;cursor:pointer;padding:0 4px;line-height:1;touch-action:manipulation;}
+.lcdel:active{color:#e74c3c;}
 .lcrow{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
-.lctag{font-size:10px;font-weight:700;color:var(--dk);background:var(--card);padding:2px 8px;border-radius:4px;min-width:44px;text-align:center;}
+.lcrow:last-child{margin-bottom:0;}
+.lctag{font-size:10px;font-weight:700;color:var(--dk);background:var(--card);padding:2px 8px;border-radius:4px;min-width:44px;text-align:center;flex-shrink:0;}
 .lctag.g{color:#1a6a40;background:#d4f0e4;}
 .lcval{font-size:13px;color:var(--txt);word-break:break-all;}
-.lcval b{color:var(--primary); font-weight:700;}
+.lcval b{color:var(--primary);}
 .lcrat{font-size:11px;font-weight:700;color:var(--primary);}
+.lcmgr{font-size:11px;color:var(--mut);margin-left:8px;}
 .lact{padding:10px 12px;display:flex;gap:8px;background:var(--dk);flex-shrink:0;}
-.abtn{flex:1;padding:13px;border-radius:10px;background:var(--green);color:#fff;font-size:13px;font-weight:700;border:none;}
+.abtn{flex:1;padding:13px;border-radius:10px;background:var(--green);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation;}
+.abtn:active{opacity:0.85;}
 
-/* ════════════════════
-   PAGE 3: 설정
-════════════════════ */
+/* ══ PAGE 3 ══ */
 .setpg{background:var(--bg);padding:16px 12px;gap:12px;}
-.secard{background:var(--sur);border-radius:12px;border:1px solid var(--bdr);margin-bottom:12px;}
+.settl{font-size:10px;font-weight:700;color:var(--mut);letter-spacing:3px;text-transform:uppercase;margin-bottom:4px;}
+.secard{background:var(--sur);border-radius:12px;border:1px solid var(--bdr);overflow:hidden;}
 .serow{padding:13px 14px;border-bottom:1px solid var(--bdr);}
-.selbl{font-size:10px;font-weight:700;color:var(--mut);margin-bottom:5px;}
-.seinp{background:transparent;border:none;outline:none;font-size:14px;width:100%;}
-.sesave{width:100%;padding:14px;background:var(--primary);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;}
+.serow:last-child{border-bottom:none;}
+.selbl{font-size:10px;font-weight:700;color:var(--mut);letter-spacing:2px;margin-bottom:5px;}
+.seinp{background:transparent;border:none;outline:none;color:var(--txt);font-family:'Noto Sans KR',sans-serif;font-size:14px;width:100%;}
+.seinp::placeholder{color:var(--mut);}
+.sedesc{font-size:10px;color:var(--mut);line-height:1.7;margin-top:4px;}
+.sesave{width:100%;padding:14px;background:var(--primary);color:#fff;border:none;border-radius:12px;font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:700;cursor:pointer;}
+.sesteps{font-size:11px;color:var(--mut);line-height:2.3;}
+.sesteps b{color:var(--txt);}
+.gaswrap{position:relative;}
+.gasbtn{position:absolute;top:8px;right:8px;background:var(--card);border:1px solid var(--bdr);border-radius:6px;color:var(--mut);font-size:10px;padding:4px 10px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+pre#gasCode{font-size:10px;color:var(--mut);line-height:1.7;white-space:pre-wrap;word-break:break-all;padding-right:52px;}
 
-/* ════════════════════
-   카메라 풀스크린
-════════════════════ */
-.camwrap{position:fixed;inset:0;background:#000;z-index:1000;display:none;flex-direction:column;}
-.camhdr{display:flex;justify-content:space-between;padding:15px;background:rgba(0,0,0,0.85);}
+/* ══ 카메라 풀스크린 ══ */
+.camwrap{position:fixed;inset:0;background:#000;z-index:1000;display:none;flex-direction:column;padding-top:var(--st);padding-bottom:var(--sb);}
+.camhdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:rgba(0,0,0,0.9);flex-shrink:0;}
 .camttl{color:#fff;font-size:16px;font-weight:700;}
-.camcls{background:rgba(255,255,255,0.2);border:none;color:#fff;padding:6px 14px;border-radius:8px;}
-.camvid{flex:1;position:relative;overflow:hidden;}
+.camcls{background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:14px;font-weight:700;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;touch-action:manipulation;}
+
+/* 비디오 영역 */
+.camvid{flex:1;position:relative;overflow:hidden;min-height:0;}
 #scanVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-.cambox{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:240px;height:120px;border:2px solid rgba(255,255,255,0.5);border-radius:10px;box-shadow:0 0 0 1000px rgba(0,0,0,0.5);}
-.laser{position:absolute;top:50%;left:0;right:0;height:2px;background:#00d4ff;box-shadow:0 0 8px #00d4ff;animation:scan 1.5s infinite;}
-@keyframes scan{0%,100%{transform:translateY(-50px)} 50%{transform:translateY(50px)}}
-.camftr{background:rgba(0,0,0,0.9);padding:15px;display:flex;align-items:center;gap:10px;}
-.cdot{width:10px;height:10px;border-radius:50%;background:#555;}
+
+/* 스캔 박스 오버레이 */
+.scanbox-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+/* 4방향 어둡게 */
+.dim-t,.dim-b,.dim-l,.dim-r{position:absolute;background:rgba(0,0,0,0.52);}
+.dim-t{top:0;left:0;right:0;height:calc(50% - 65px);}
+.dim-b{bottom:0;left:0;right:0;height:calc(50% - 65px);}
+.dim-l{top:calc(50% - 65px);left:0;width:calc(50% - 130px);height:130px;}
+.dim-r{top:calc(50% - 65px);right:0;width:calc(50% - 130px);height:130px;}
+/* 스캔 프레임 */
+.sframe{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:260px;height:130px;}
+.sframe::before,.sframe::after,.sframe>span::before,.sframe>span::after{content:'';position:absolute;width:24px;height:24px;border-color:#fff;border-style:solid;}
+.sframe::before{top:0;left:0;border-width:3px 0 0 3px;border-radius:2px 0 0 0;}
+.sframe::after{top:0;right:0;border-width:3px 3px 0 0;border-radius:0 2px 0 0;}
+.sframe>span::before{bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 2px;}
+.sframe>span::after{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 2px 0;}
+/* 레이저 */
+.laser{position:absolute;left:6px;right:6px;height:2px;background:linear-gradient(90deg,transparent,#00d4ff,#fff,#00d4ff,transparent);box-shadow:0 0 8px #00d4ff;animation:lz 1.8s ease-in-out infinite;}
+@keyframes lz{0%{top:4px;opacity:.4}50%{top:122px;opacity:1}100%{top:4px;opacity:.4}}
+.camhint{position:absolute;bottom:12px;width:100%;text-align:center;color:rgba(255,255,255,0.55);font-size:12px;letter-spacing:.5px;}
+/* 플래시 */
+.camflash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:10;transition:opacity .05s;}
+.camflash.on{opacity:.4;}
+
+.camftr{flex-shrink:0;background:rgba(0,0,0,0.9);padding:14px 16px;display:flex;align-items:center;gap:10px;min-height:54px;}
+.cdot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.2);flex-shrink:0;}
 .cdot.ok{background:#2ecc8a;box-shadow:0 0 10px #2ecc8a;}
-.ctxt{color:#ccc;font-size:14px;flex:1;}
+.ctxt{font-size:14px;color:rgba(255,255,255,0.55);flex:1;}
 .ctxt.ok{color:#fff;font-weight:700;}
-.torchbtn{background:rgba(255,255,255,0.15);border:none;color:#fff;padding:8px 14px;border-radius:8px;}
+.torchbtn{background:rgba(255,255,255,0.12);border:none;color:rgba(255,255,255,0.7);padding:8px 14px;border-radius:8px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-size:12px;touch-action:manipulation;flex-shrink:0;}
+.torchbtn.on{background:rgba(255,200,0,0.25);color:#ffd700;}
+
+/* ══ 모달 (권한/엑셀) ══ */
+.mov{position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:2000;display:none;align-items:flex-end;padding-bottom:var(--sb);}
+.mov.on{display:flex;}
+.msheet{background:var(--sur);border-radius:22px 22px 0 0;padding:10px 22px 32px;width:100%;animation:sup .3s ease;}
+@keyframes sup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mhandle{width:36px;height:4px;background:var(--bdr);border-radius:2px;margin:0 auto 20px;}
+.mico{width:52px;height:52px;border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;}
+.mico.cam{background:rgba(26,90,122,0.1);border:1.5px solid rgba(26,90,122,0.3);}
+.mico.no{background:rgba(231,76,60,0.1);border:1.5px solid rgba(231,76,60,0.3);}
+.mico.xl{background:rgba(39,174,96,0.1);border:1.5px solid rgba(39,174,96,0.3);}
+.mh2{font-size:18px;font-weight:700;text-align:center;margin-bottom:8px;}
+.mp{font-size:13px;color:var(--mut);text-align:center;line-height:1.75;margin-bottom:16px;}
+.mp b{color:var(--txt);}
+.msteps{background:var(--card);border-radius:10px;padding:12px;font-size:11px;color:var(--mut);line-height:2.2;margin-bottom:16px;}
+.msteps b{color:var(--txt);}
+.mbtns{display:flex;flex-direction:column;gap:8px;}
+.mbtn{width:100%;padding:14px;border-radius:12px;border:none;font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;}
+.mbtn.pri{background:var(--primary);color:#fff;}
+.mbtn.ghost{background:var(--card);color:var(--mut);}
 
 /* 토스트 */
-.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(15,61,85,0.95);border-radius:22px;padding:12px 24px;font-size:13px;color:#fff;z-index:2000;opacity:0;transition:0.3s;pointer-events:none;}
-.toast.on{opacity:1;transform:translateX(-50%) translateY(-10px);}
+.toast{position:fixed;bottom:calc(76px + var(--sb));left:50%;transform:translateX(-50%) translateY(16px);background:rgba(15,61,85,0.95);border-radius:22px;padding:10px 20px;font-size:13px;color:#fff;z-index:3000;opacity:0;transition:all .25s;white-space:nowrap;pointer-events:none;max-width:88vw;overflow:hidden;text-overflow:ellipsis;}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="pages">
-    <!-- PAGE 1: 입력 -->
+
+    <!-- ══ PAGE 1 ══ -->
     <div class="pg on" id="pg-main">
       <div class="mscroll">
         <div class="topbar">
           <div class="clk" id="clkEl">--.--.--</div>
-          <input class="mgrinp" id="mgrInp" type="text" placeholder="담당자 이름">
+          <input class="mgrinp" id="mgrInp" type="text" placeholder="담당자 이름" autocomplete="off">
         </div>
 
         <!-- 주제 -->
         <div class="scard">
           <div class="shdr">
             <div class="slbl">주제</div>
-            <button class="sbtn" onclick="openCam('subject')">바코드 스캔</button>
+            <button class="sbtn" onclick="openCam('subject')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              바코드 스캔
+            </button>
           </div>
           <div class="srow" id="sRowS"><div class="sdot"></div><div class="scode" id="sTxtS">시리얼 스캔 전</div></div>
-          <div class="nrow"><div class="nlbl">넘버</div><input class="ninp" id="nInpS" type="text" placeholder="스캔 안될 시 직접 입력"></div>
+          <div class="nrow"><div class="nlbl">넘버</div><input class="ninp" id="nInpS" type="text" inputmode="numeric" placeholder="스캔 안될 시 직접 입력"></div>
         </div>
 
         <!-- 경화제 -->
         <div class="scard">
           <div class="shdr">
             <div class="slbl">경화제</div>
-            <button class="sbtn" onclick="openCam('hardener')">바코드 스캔</button>
+            <button class="sbtn" onclick="openCam('hardener')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              바코드 스캔
+            </button>
           </div>
           <div class="srow" id="sRowH"><div class="sdot"></div><div class="scode" id="sTxtH">시리얼 스캔 전</div></div>
-          <div class="nrow"><div class="nlbl">넘버</div><input class="ninp" id="nInpH" type="text" placeholder="스캔 안될 시 직접 입력"></div>
+          <div class="nrow"><div class="nlbl">넘버</div><input class="ninp" id="nInpH" type="text" inputmode="numeric" placeholder="스캔 안될 시 직접 입력"></div>
         </div>
 
         <!-- 비율 -->
         <div class="rcard">
+          <div class="rttl">비 율</div>
           <div class="ptrack">
-            <div class="ps" id="ps" style="width:50%"><span id="psTxt">주제 50%</span></div>
-            <div class="ph" id="ph" style="width:50%"><span id="phTxt">경화제 50%</span></div>
+            <div class="ps" id="ps" style="width:50%"><span id="psTxt">50%</span></div>
+            <div class="ph" id="ph" style="width:50%"><span id="phTxt">50%</span></div>
+          </div>
+          <div class="plbls">
+            <span class="pls">주제 <b id="pctS">50</b>%</span>
+            <span class="plh">경화제 <b id="pctH">50</b>%</span>
           </div>
           <div class="slrow">
-            <div class="sltop"><span style="font-weight:700;">주제</span><span class="slpct s" id="vS">50%</span></div>
+            <div class="sltop"><span class="slname">주제</span><span class="slpct s" id="vS">50%</span></div>
             <input class="rs" id="slS" type="range" min="0" max="100" value="50">
           </div>
           <div class="slrow">
-            <div class="sltop"><span style="font-weight:700;">경화제</span><span class="slpct h" id="vH">50%</span></div>
+            <div class="sltop"><span class="slname">경화제</span><span class="slpct h" id="vH">50%</span></div>
             <input class="rh" id="slH" type="range" min="0" max="100" value="50">
           </div>
         </div>
 
-        <button class="regbtn" onclick="doSubmit()">입력 등록 완료</button>
+        <button class="regbtn" onclick="doSubmit()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          입력 등록 완료
+        </button>
+
+        <div class="pvbox" id="pvBox"><div class="pvempty">등록된 항목이 없습니다</div></div>
       </div>
     </div>
 
-    <!-- PAGE 2: 목록 -->
+    <!-- ══ PAGE 2 ══ -->
     <div class="pg" id="pg-list">
       <div class="ltool">
-        <input class="lsrch" id="srchBox" type="text" placeholder="검색..." oninput="renderList()">
-        <button class="ldelbtn" onclick="clearAll()">초기화</button>
+        <input class="lsrch" id="srchBox" type="text" placeholder="🔍 검색..." oninput="renderList()">
+        <button class="ldelbtn" onclick="clearAll()">전체삭제</button>
       </div>
       <div class="lbody" id="listBody"></div>
       <div class="lact">
@@ -210,297 +284,418 @@ input.rh::-webkit-slider-thumb{-webkit-appearance:none;width:32px;height:32px;bo
       </div>
     </div>
 
-    <!-- PAGE 3: 설정 -->
+    <!-- ══ PAGE 3 ══ -->
     <div class="pg setpg" id="pg-set">
-      <div style="font-size:12px; font-weight:700; color:var(--mut); margin-bottom:5px;">구글 시트 URL 설정</div>
+      <div class="settl">구글 시트 연동</div>
       <div class="secard">
-        <div class="serow"><input class="seinp" id="gasUrl" type="text" placeholder="https://script.google.com/macros/..."></div>
+        <div class="serow"><div class="selbl">Apps Script URL</div><input class="seinp" id="gasUrl" type="text" placeholder="https://script.google.com/macros/s/..." autocomplete="off" spellcheck="false"><div class="sedesc">Apps Script 배포 후 받은 웹 앱 URL을 입력하세요.</div></div>
+        <div class="serow"><div class="selbl">시트 이름 (선택)</div><input class="seinp" id="sName" type="text" placeholder="Sheet1" autocomplete="off"><div class="sedesc">비워두면 첫 번째 시트에 저장됩니다.</div></div>
       </div>
-      <button class="sesave" onclick="saveSettings()">설정 저장</button>
+      <button class="sesave" onclick="doSaveSet()">설정 저장</button>
+      <div class="settl" style="margin-top:10px">설정 순서</div>
+      <div class="secard"><div class="serow"><div class="sesteps">① Google Sheets에서 <b>새 스프레드시트</b> 생성<br>② <b>확장 프로그램 → Apps Script</b> 클릭<br>③ 아래 코드 <b>복사 후 붙여넣기</b> → 저장<br>④ <b>배포 → 새 배포 → 웹 앱</b> 선택<br>⑤ 액세스: <b>모든 사용자</b> → 배포<br>⑥ <b>웹 앱 URL</b> 복사 → 위에 붙여넣기 → 설정 저장</div></div></div>
+      <div class="settl" style="margin-top:10px">Apps Script 코드</div>
+      <div class="secard"><div class="serow gaswrap"><button class="gasbtn" onclick="copyGas()">복사</button><pre id="gasCode"></pre></div></div>
     </div>
+
   </div>
 
   <nav class="bnav">
-    <button class="nb on" onclick="goTab('main', this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>입력
+    <button class="nb on" id="nb-main" onclick="goTab('main',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>입력
     </button>
-    <button class="nb" onclick="goTab('list', this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h6M7 16h4"/></svg>목록
+    <button class="nb" id="nb-list" onclick="goTab('list',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h6M7 16h4"/></svg>목록
       <span class="nbadge" id="nbadge" style="display:none">0</span>
     </button>
-    <button class="nb" onclick="goTab('set', this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>설정
+    <button class="nb" id="nb-set" onclick="goTab('set',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l-.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>설정
     </button>
   </nav>
 </div>
 
-<!-- 카메라 뷰어 -->
+<!-- 카메라 -->
 <div class="camwrap" id="camWrap">
   <div class="camhdr">
     <div class="camttl" id="camTtl">바코드 스캔</div>
-    <button class="camcls" onclick="closeCam()">닫기</button>
+    <button class="camcls" onclick="closeCam()">✕ 닫기</button>
   </div>
   <div class="camvid">
     <video id="scanVideo" playsinline autoplay muted></video>
-    <div class="cambox"><div class="laser"></div></div>
-    <div style="position:absolute; bottom:20px; width:100%; text-align:center; color:#fff; font-size:12px;">바코드를 사각형 안에 맞추세요</div>
+    <div class="scanbox-wrap">
+      <div class="dim-t"></div><div class="dim-b"></div>
+      <div class="dim-l"></div><div class="dim-r"></div>
+    </div>
+    <div class="sframe"><span></span><div class="laser"></div></div>
+    <div class="camhint">바코드를 박스 안에 맞추세요</div>
+    <div class="camflash" id="camFlash"></div>
   </div>
   <div class="camftr">
     <div class="cdot" id="cdot"></div>
     <div class="ctxt" id="ctxt">스캔 대기 중...</div>
-    <button class="torchbtn" id="torchBtn" style="display:none;" onclick="toggleTorch()">🔦 플래시</button>
+    <button class="torchbtn" id="torchBtn" onclick="toggleTorch()" style="display:none">🔦 플래시</button>
   </div>
 </div>
+
+<!-- 모달 -->
+<div class="mov" id="movEl"><div class="msheet" id="msheetEl"></div></div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-let entries = JSON.parse(localStorage.getItem('sr_final_entries') || '[]');
-let ssSerial = '', hsSerial = '';
-let camTarget = '';
-let codeReader = null;
-let torchTrack = null;
-let torchOn = false;
+/* ═══════ GAS 코드 ═══════ */
+var GAS_CODE = 'function doPost(e){\n  try{\n    var d=JSON.parse(e.postData.contents);\n    var ss=SpreadsheetApp.getActiveSpreadsheet();\n    var nm=d.sheetName||\'\';\n    var sh=nm?(ss.getSheetByName(nm)||ss.getActiveSheet()):ss.getActiveSheet();\n    if(sh.getLastRow()===0){\n      sh.appendRow([\'번호\',\'날짜시간\',\'담당자\',\'주제시리얼\',\'주제넘버\',\'경화제시리얼\',\'경화제넘버\',\'주제비율\',\'경화제비율\']);\n      sh.getRange(1,1,1,9).setFontWeight(\'bold\').setBackground(\'#0f3d55\').setFontColor(\'#fff\');\n    }\n    for(var i=0;i<d.rows.length;i++){\n      var r=d.rows[i];\n      sh.appendRow([r.num,r.dt,r.mgr,r.ss,r.sn,r.hs,r.hn,r.sr,r.hr]);\n    }\n    return ContentService.createTextOutput(JSON.stringify({result:\'ok\'})).setMimeType(ContentService.MimeType.JSON);\n  }catch(er){\n    return ContentService.createTextOutput(JSON.stringify({result:\'error\',message:er.toString()})).setMimeType(ContentService.MimeType.JSON);\n  }\n}\nfunction doGet(e){\n  return ContentService.createTextOutput(JSON.stringify({result:\'ok\',message:\'Ready\'})).setMimeType(ContentService.MimeType.JSON);\n}';
 
-document.addEventListener('DOMContentLoaded', () => {
-  tickClock(); setInterval(tickClock, 10000);
-  initSliders(); renderList(); updateBadge();
-  document.getElementById('gasUrl').value = localStorage.getItem('sr_gasUrl') || '';
+/* ═══════ STATE ═══════ */
+var entries = JSON.parse(localStorage.getItem('sr_fin_entries') || '[]');
+var ssSerial = '', hsSerial = '';
+var camTarget = '';
+var activeStream = null;   // ★ 매 스캔마다 새 스트림
+var activeReader = null;   // ★ 매 스캔마다 새 리더
+var torchTrack = null;
+var torchOn = false;
+var scanCooldown = false;
+var gasUrl = '', sheetName = '';
+
+/* ═══════ INIT ═══════ */
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('gasCode').textContent = GAS_CODE;
+  loadSettings();
+  tickClock(); setInterval(tickClock, 20000);
+  initSliders();
+  renderPreview(); renderList(); updateBadge();
+  document.getElementById('camWrap').addEventListener('touchmove', function(e){ e.preventDefault(); }, {passive:false});
 });
 
-function tickClock() {
-  const d = new Date();
-  document.getElementById('clkEl').textContent = `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+function p2(n){ return n<10?'0'+n:''+n; }
+function tickClock(){
+  var d=new Date();
+  document.getElementById('clkEl').textContent = d.getFullYear()+'.'+(d.getMonth()+1)+'.'+d.getDate()+' '+p2(d.getHours())+':'+p2(d.getMinutes());
 }
 
+/* ═══════ SLIDERS ═══════ */
 function initSliders(){
   document.getElementById('slS').addEventListener('input', function(){ applyRatio(+this.value); });
   document.getElementById('slH').addEventListener('input', function(){ applyRatio(100 - +this.value); });
   applyRatio(50);
 }
-
-function applyRatio(s) {
-  const h = 100 - s;
-  document.getElementById('slS').value = s; document.getElementById('slH').value = h;
-  document.getElementById('ps').style.width = s + '%'; document.getElementById('ph').style.width = h + '%';
-  document.getElementById('psTxt').textContent = s > 15 ? `주제 ${s}%` : '';
-  document.getElementById('phTxt').textContent = h > 15 ? `경화제 ${h}%` : '';
-  document.getElementById('vS').textContent = s + '%'; document.getElementById('vH').textContent = h + '%';
+function applyRatio(s){
+  var h = 100-s;
+  document.getElementById('slS').value=s; document.getElementById('slH').value=h;
+  document.getElementById('ps').style.width=s+'%'; document.getElementById('ph').style.width=h+'%';
+  document.getElementById('psTxt').textContent = s>12?s+'%':'';
+  document.getElementById('phTxt').textContent = h>12?h+'%':'';
+  document.getElementById('pctS').textContent=s; document.getElementById('pctH').textContent=h;
+  document.getElementById('vS').textContent=s+'%'; document.getElementById('vH').textContent=h+'%';
+  document.getElementById('slS').style.background='linear-gradient(to right,#1a5a7a 0%,#1a5a7a '+s+'%,#dde8f0 '+s+'%,#dde8f0 100%)';
+  document.getElementById('slH').style.background='linear-gradient(to right,#27ae6e 0%,#27ae6e '+h+'%,#dde8f0 '+h+'%,#dde8f0 100%)';
 }
 
-function goTab(tab, btn) {
-  document.querySelectorAll('.pg').forEach(p => p.classList.remove('on'));
-  document.querySelectorAll('.nb').forEach(b => b.classList.remove('on'));
-  document.getElementById('pg-' + tab).classList.add('on');
+/* ═══════ TABS ═══════ */
+function goTab(tab, btn){
+  document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.nb').forEach(function(b){b.classList.remove('on');});
+  document.getElementById('pg-'+tab).classList.add('on');
   btn.classList.add('on');
-  if(tab === 'list') renderList();
+  if(tab==='set') loadSettings();
+  if(tab==='list') renderList();
 }
 
-/* 카메라 모듈 완전 수정 (안정적 구동 보장) */
-async function openCam(target) {
+/* ═══════════════════════════════════════
+   카메라 — 핵심 수정
+   매번 완전히 새로운 스트림+리더 생성
+   → 망원 누적, 포커스 고착 문제 해결
+═══════════════════════════════════════ */
+function openCam(target){
   camTarget = target;
-  document.getElementById('camTtl').textContent = target === 'subject' ? '주제 스캔' : '경화제 스캔';
-  document.getElementById('ctxt').textContent = '스캔 대기 중...';
+  document.getElementById('camTtl').textContent = target==='subject'?'주제 바코드 스캔':'경화제 바코드 스캔';
   document.getElementById('cdot').className = 'cdot';
+  document.getElementById('ctxt').className = 'ctxt';
+  document.getElementById('ctxt').textContent = '스캔 대기 중...';
+  checkPermThenStart();
+}
+
+async function checkPermThenStart(){
+  var state = 'prompt';
+  if(navigator.permissions && navigator.permissions.query){
+    try{ var r = await navigator.permissions.query({name:'camera'}); state = r.state; }catch(e){}
+  }
+  if(state==='denied'){ showPermDenied(); return; }
+  if(state==='prompt'){ showPermRequest(); return; }
+  startFreshCam();
+}
+
+async function startFreshCam(){
+  // ★ 반드시 이전 스트림 완전 종료 후 새로 시작
+  killCam();
+
   document.getElementById('camWrap').style.display = 'flex';
 
-  if(!codeReader) {
-    codeReader = new ZXing.BrowserMultiFormatReader();
-  }
-
   try {
-    const devices = await codeReader.listVideoInputDevices();
-    let selectedDeviceId = devices[0].deviceId;
-    
-    // 후면 카메라 찾기 (우선순위)
-    for (const d of devices) {
-      if (d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('rear') || d.label.toLowerCase().includes('environment')) {
-        selectedDeviceId = d.deviceId; break;
-      }
-    }
-    // 후면 명칭이 없으면 보통 리스트의 마지막 기기가 후면입니다.
-    if(devices.length > 1 && selectedDeviceId === devices[0].deviceId) {
-        selectedDeviceId = devices[devices.length - 1].deviceId;
-    }
-
-    // 영상 디코드 시작 (에러는 지속 발생하므로 무시, 결과만 잡음)
-    codeReader.decodeFromVideoDevice(selectedDeviceId, 'scanVideo', (result, err) => {
-      if(result) {
-        onScanResult(result.getText());
-      }
+    // ★ zoom, focusMode 명시 — 망원 방지
+    var stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: 'environment' },
+        width:  { ideal: 1920 },
+        height: { ideal: 1080 },
+        focusMode: 'continuous',
+        zoom: 1.0           // ★ 줌 초기화
+      },
+      audio: false
     });
 
-    // 플래시(토치) 제어용 트랙 추출
-    setTimeout(() => {
-      const vid = document.getElementById('scanVideo');
-      if(vid && vid.srcObject) {
-        const tracks = vid.srcObject.getVideoTracks();
-        if(tracks.length > 0) {
-          const caps = tracks[0].getCapabilities ? tracks[0].getCapabilities() : {};
-          if(caps.torch) {
-            torchTrack = tracks[0];
-            document.getElementById('torchBtn').style.display = 'block';
-          }
-        }
-      }
-    }, 1000);
+    activeStream = stream;
+    var vid = document.getElementById('scanVideo');
+    vid.srcObject = stream;
+    await vid.play();
 
-  } catch (err) {
-    showToast("카메라를 사용할 수 없습니다.");
-    closeCam();
+    // 토치 체크
+    var tracks = stream.getVideoTracks();
+    if(tracks.length > 0){
+      // ★ zoom 강제 1x 적용 (지원 기기)
+      try {
+        var caps = tracks[0].getCapabilities ? tracks[0].getCapabilities() : {};
+        if(caps.zoom){ await tracks[0].applyConstraints({advanced:[{zoom:1.0}]}); }
+        if(caps.torch){ torchTrack = tracks[0]; document.getElementById('torchBtn').style.display='block'; }
+      }catch(e){}
+    }
+
+    // ★ 새 리더 생성 — 절대 재사용 안 함
+    activeReader = new ZXing.BrowserMultiFormatReader();
+    var hints = new Map();
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[
+      ZXing.BarcodeFormat.CODE_128, ZXing.BarcodeFormat.CODE_39,
+      ZXing.BarcodeFormat.EAN_13,  ZXing.BarcodeFormat.EAN_8,
+      ZXing.BarcodeFormat.UPC_A,   ZXing.BarcodeFormat.UPC_E,
+      ZXing.BarcodeFormat.ITF,     ZXing.BarcodeFormat.QR_CODE
+    ]);
+    var mfr = new ZXing.MultiFormatReader();
+    mfr.setHints(hints);
+
+    // ★ canvas 루프 방식 — iOS 안정성 최우선
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+
+    function tick(){
+      if(!activeStream){ return; }
+      var v = document.getElementById('scanVideo');
+      if(v && v.readyState >= 2 && v.videoWidth > 0){
+        canvas.width  = v.videoWidth;
+        canvas.height = v.videoHeight;
+        ctx.drawImage(v, 0, 0);
+        try{
+          var src = new ZXing.RGBLuminanceSource(ctx.getImageData(0,0,canvas.width,canvas.height).data, canvas.width, canvas.height);
+          var bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(src));
+          var res = mfr.decode(bmp);
+          if(res && !scanCooldown){ onScanResult(res.getText()); return; }
+        }catch(e){}
+      }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+
+  }catch(err){
+    killCam();
+    if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError') showPermDenied();
+    else showToast('카메라 오류: '+err.message);
   }
 }
 
-function onScanResult(code) {
-  if (navigator.vibrate) navigator.vibrate(60);
+function onScanResult(code){
+  if(!code || scanCooldown) return;
+  scanCooldown = true;
+
+  if(navigator.vibrate) navigator.vibrate(80);
+  var f = document.getElementById('camFlash');
+  f.classList.add('on'); setTimeout(function(){ f.classList.remove('on'); }, 120);
+
   document.getElementById('cdot').className = 'cdot ok';
   document.getElementById('ctxt').className = 'ctxt ok';
   document.getElementById('ctxt').textContent = code;
 
-  if (camTarget === 'subject') {
+  if(camTarget==='subject'){
     ssSerial = code;
-    document.getElementById('sRowS').classList.add('on');
+    document.getElementById('sRowS').className = 'srow on';
     document.getElementById('sTxtS').textContent = code;
   } else {
     hsSerial = code;
-    document.getElementById('sRowH').classList.add('on');
+    document.getElementById('sRowH').className = 'srow on';
     document.getElementById('sTxtH').textContent = code;
   }
-  
-  setTimeout(() => {
+
+  // ★ 닫기 전 쿨다운 해제 타이머 (재사용 방지)
+  setTimeout(function(){
     closeCam();
-    showToast("스캔 성공!");
-  }, 500);
+    showToast('✓ 스캔 완료: ' + code);
+    setTimeout(function(){ scanCooldown = false; }, 500);
+  }, 600);
 }
 
-function closeCam() {
-  if (codeReader) codeReader.reset(); // 비디오 스트림과 디코딩 중단
+// ★ killCam: 스트림/리더 완전 정리 (줌 리셋 포함)
+function killCam(){
+  if(activeStream){
+    activeStream.getTracks().forEach(function(t){ t.stop(); });
+    activeStream = null;
+  }
+  if(activeReader){
+    try{ activeReader.reset(); }catch(e){}
+    activeReader = null;
+  }
+  var vid = document.getElementById('scanVideo');
+  if(vid){ vid.srcObject = null; }
   torchTrack = null; torchOn = false;
   document.getElementById('torchBtn').style.display = 'none';
+  document.getElementById('torchBtn').className = 'torchbtn';
+}
+
+function closeCam(){
+  killCam();
   document.getElementById('camWrap').style.display = 'none';
 }
 
-async function toggleTorch() {
-  if (!torchTrack) return;
-  try {
+async function toggleTorch(){
+  if(!torchTrack) return;
+  try{
     torchOn = !torchOn;
-    await torchTrack.applyConstraints({ advanced: [{ torch: torchOn }] });
-  } catch(e) {}
+    await torchTrack.applyConstraints({advanced:[{torch:torchOn}]});
+    document.getElementById('torchBtn').className = 'torchbtn'+(torchOn?' on':'');
+  }catch(e){}
 }
 
-/* 데이터 검증 및 제출 (핵심 로직 수정) */
-function doSubmit() {
-  const sn = document.getElementById('nInpS').value.trim();
-  const hn = document.getElementById('nInpH').value.trim();
-  
-  // 조건: 주제와 경화제 각각 (시리얼 스캔) 또는 (넘버 수동 입력) 중 최소 1개가 있어야 함.
-  const isSubjectOk = (ssSerial !== '' || sn !== '');
-  const isHardenerOk = (hsSerial !== '' || hn !== '');
+/* ═══════ 권한 모달 ═══════ */
+function showM(html){ document.getElementById('msheetEl').innerHTML=html; document.getElementById('movEl').classList.add('on'); }
+function hideM(){ document.getElementById('movEl').classList.remove('on'); }
 
-  if (!isSubjectOk || !isHardenerOk) {
-    showToast("주제와 경화제의 정보를 모두 입력해주세요. (스캔 또는 넘버 수동입력)");
-    return;
-  }
-
-  const d = new Date();
-  const dt = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-  const sv = parseInt(document.getElementById('slS').value);
-
-  const entry = {
-    id: Date.now(),
-    num: entries.length + 1,
-    dt: dt,
-    mgr: document.getElementById('mgrInp').value.trim(),
-    ss: ssSerial, sn: sn,
-    hs: hsSerial, hn: hn,
-    sr: sv, hr: 100 - sv
-  };
-
-  entries.push(entry);
-  localStorage.setItem('sr_final_entries', JSON.stringify(entries));
-
-  // 필드 리셋
-  ssSerial = ''; hsSerial = '';
-  document.getElementById('nInpS').value = ''; document.getElementById('nInpH').value = '';
-  document.getElementById('sRowS').className = 'srow'; document.getElementById('sTxtS').textContent = '시리얼 스캔 전';
-  document.getElementById('sRowH').className = 'srow'; document.getElementById('sTxtH').textContent = '시리얼 스캔 전';
-
-  updateBadge(); renderList();
-  showToast(`✓ ${entry.num}번 데이터가 등록되었습니다.`);
+function showPermRequest(){
+  showM('<div class="mhandle"></div>'+
+    '<div class="mico cam"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a5a7a" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>'+
+    '<div class="mh2">카메라 권한 필요</div>'+
+    '<div class="mp">바코드 스캔을 위해 <b>카메라 접근 권한</b>이 필요합니다.<br>팝업에서 <b>"허용"</b>을 탭해주세요.</div>'+
+    '<div class="mbtns"><button class="mbtn pri" onclick="reqCam()">권한 허용 후 시작</button><button class="mbtn ghost" onclick="hideM()">취소</button></div>');
+}
+function showPermDenied(){
+  showM('<div class="mhandle"></div>'+
+    '<div class="mico no"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>'+
+    '<div class="mh2">카메라 접근 차단됨</div>'+
+    '<div class="mp">브라우저 설정에서 카메라를<br><b>허용</b>으로 변경 후 새로고침 해주세요.</div>'+
+    '<div class="mbtns"><button class="mbtn pri" onclick="location.reload()">새로고침</button><button class="mbtn ghost" onclick="hideM()">닫기</button></div>');
 }
 
-/* 목록 렌더링 (1번부터 위에서 아래로) */
-function renderList() {
-  const q = (document.getElementById('srchBox') ? document.getElementById('srchBox').value : '').toLowerCase();
-  
-  // Array 그대로 매핑하면 등록한 순서대로(1번부터 최상단) 보여집니다.
-  const fil = q ? entries.filter(e => ((e.ss||'')+(e.sn||'')+(e.hs||'')+(e.hn||'')+(e.mgr||'')).toLowerCase().includes(q)) : entries;
-  const el = document.getElementById('listBody');
-  
-  if (!fil.length) {
-    el.innerHTML = '<div style="text-align:center; padding:50px 20px; color:#999; font-size:14px;">데이터가 없습니다.</div>';
-    return;
-  }
-
-  el.innerHTML = fil.map(e => `
-    <div class="lcard">
-      <div class="lcTop"><span class="lcnum">No.${e.num}</span><span class="lctime">${e.dt}</span><button class="lcdel" onclick="delE(${e.id})">×</button></div>
-      <div class="lcrow"><span class="lctag">주제</span><span class="lcval">${e.ss||'-'} ${e.sn?'<b>(#'+e.sn+')</b>':''}</span></div>
-      <div class="lcrow"><span class="lctag g">경화제</span><span class="lcval">${e.hs||'-'} ${e.hn?'<b>(#'+e.hn+')</b>':''}</span></div>
-      <div class="lcrow" style="margin-top:8px;">
-        <span class="lcrat">비율 ${e.sr}:${e.hr}</span>
-        ${e.mgr ? '<span class="lcmgr" style="margin-left:10px;">👤 '+e.mgr+'</span>' : ''}
-      </div>
-    </div>
-  `).join('');
-}
-
-function delE(id) {
-  entries = entries.filter(e => e.id !== id);
-  // 번호 재정렬
-  entries.forEach((e, i) => e.num = i + 1);
-  localStorage.setItem('sr_final_entries', JSON.stringify(entries));
-  updateBadge(); renderList();
-}
-
-function clearAll() {
-  if (confirm('등록된 데이터를 전부 삭제하시겠습니까?')) {
-    entries = []; localStorage.removeItem('sr_final_entries');
-    updateBadge(); renderList();
+async function reqCam(){
+  hideM();
+  try{
+    var s = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+    s.getTracks().forEach(function(t){t.stop();});
+    startFreshCam();
+  }catch(err){
+    if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError') showPermDenied();
+    else showToast('카메라 오류: '+err.message);
   }
 }
 
-function updateBadge() {
-  const b = document.getElementById('nbadge');
-  if (entries.length > 0) { b.style.display = 'flex'; b.textContent = entries.length; }
-  else { b.style.display = 'none'; }
+/* ═══════ 등록 ═══════ */
+function doSubmit(){
+  var sn = document.getElementById('nInpS').value.trim();
+  var hn = document.getElementById('nInpH').value.trim();
+  if(!ssSerial && !sn && !hsSerial && !hn){ showToast('주제 또는 경화제 정보를 입력해주세요'); return; }
+  var d = new Date();
+  var dt = d.getFullYear()+'.'+p2(d.getMonth()+1)+'.'+p2(d.getDate())+' '+p2(d.getHours())+':'+p2(d.getMinutes())+':'+p2(d.getSeconds());
+  var sv = +document.getElementById('slS').value;
+  var e = {id:Date.now(),num:entries.length+1,dt:dt,mgr:document.getElementById('mgrInp').value.trim(),ss:ssSerial,sn:sn,hs:hsSerial,hn:hn,sr:sv,hr:100-sv};
+  entries.push(e);
+  localStorage.setItem('sr_fin_entries', JSON.stringify(entries));
+  ssSerial=''; hsSerial='';
+  document.getElementById('sRowS').className='srow'; document.getElementById('sTxtS').textContent='시리얼 스캔 전';
+  document.getElementById('sRowH').className='srow'; document.getElementById('sTxtH').textContent='시리얼 스캔 전';
+  document.getElementById('nInpS').value=''; document.getElementById('nInpH').value='';
+  updateBadge(); renderPreview(); renderList();
+  showToast('✓ '+e.num+'번 등록 완료');
 }
 
-function doExcel() {
-  if(!entries.length){ showToast('등록된 항목이 없습니다.'); return; }
-  const ws = [['번호','날짜시간','담당자','주제시리얼','주제넘버','경화제시리얼','경화제넘버','주제비율','경화제비율']];
-  entries.forEach(e => ws.push([e.num, e.dt, e.mgr||'', e.ss||'', e.sn||'', e.hs||'', e.hn||'', e.sr, e.hr]));
-  
-  const wb = XLSX.utils.book_new();
-  const sh = XLSX.utils.aoa_to_sheet(ws);
-  sh['!cols'] = [{wch:6},{wch:16},{wch:10},{wch:18},{wch:10},{wch:18},{wch:10},{wch:8},{wch:8}];
+/* ═══════ 렌더 ═══════ */
+function renderPreview(){
+  var el = document.getElementById('pvBox');
+  if(!entries.length){ el.innerHTML='<div class="pvempty">등록된 항목이 없습니다</div>'; return; }
+  el.innerHTML = entries.slice(-5).reverse().map(function(e){
+    return '<div class="pve"><div class="pvnum">'+e.num+'번 · '+e.dt.slice(0,16)+(e.mgr?' · '+e.mgr:'')+'</div>'+
+      '<div class="pvline"><span>주제</span> '+(e.ss||'-')+(e.sn?' #'+e.sn:'')+'</div>'+
+      '<div class="pvline"><span>경화제</span> '+(e.hs||'-')+(e.hn?' #'+e.hn:'')+'</div>'+
+      '<div class="pvline"><span>비율</span> '+e.sr+' : '+e.hr+'</div></div>';
+  }).join('');
+}
+
+function renderList(){
+  var q = (document.getElementById('srchBox')?document.getElementById('srchBox').value:'').toLowerCase();
+  var fil = q ? entries.filter(function(e){return((e.ss||'')+(e.sn||'')+(e.hs||'')+(e.hn||'')+(e.mgr||'')).toLowerCase().includes(q);}) : entries;
+  var el = document.getElementById('listBody');
+  if(!fil.length){ el.innerHTML='<div class="lempty"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h6M7 16h4"/></svg><span>'+(q?'검색 결과 없음':'등록된 항목이 없습니다')+'</span></div>'; return; }
+  el.innerHTML = fil.map(function(e){
+    return '<div class="lcard">'+
+      '<div class="lcTop"><span class="lcnum">No.'+e.num+'</span><span class="lctime">'+e.dt.slice(0,16)+'</span><button class="lcdel" onclick="delE('+e.id+')">×</button></div>'+
+      '<div class="lcrow"><span class="lctag">주제</span><span class="lcval">'+(e.ss||'-')+(e.sn?' <b>(#'+e.sn+')</b>':'')+'</span></div>'+
+      '<div class="lcrow"><span class="lctag g">경화제</span><span class="lcval">'+(e.hs||'-')+(e.hn?' <b>(#'+e.hn+')</b>':'')+'</span></div>'+
+      '<div class="lcrow"><span class="lcrat">비율 '+e.sr+':'+e.hr+'</span>'+(e.mgr?'<span class="lcmgr">👤 '+e.mgr+'</span>':'')+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+function delE(id){ entries=entries.filter(function(e){return e.id!==id;}); entries.forEach(function(e,i){e.num=i+1;}); localStorage.setItem('sr_fin_entries',JSON.stringify(entries)); updateBadge(); renderPreview(); renderList(); }
+function clearAll(){ if(!entries.length)return; if(confirm('등록된 '+entries.length+'개 항목을 모두 삭제할까요?')){entries=[];localStorage.removeItem('sr_fin_entries');updateBadge();renderPreview();renderList();} }
+function updateBadge(){ var c=entries.length; var b=document.getElementById('nbadge'); if(c>0){b.style.display='flex';b.textContent=c>99?'99+':c;}else b.style.display='none'; }
+
+/* ═══════════════════════════════════════
+   엑셀 — iOS Safari 완전 호환
+   XLSX → Blob → Object URL → <a> click
+═══════════════════════════════════════ */
+function doExcel(){
+  if(!entries.length){ showToast('등록된 항목이 없습니다'); return; }
+
+  var ws = [['번호','날짜시간','담당자','주제시리얼','주제넘버','경화제시리얼','경화제넘버','주제비율','경화제비율']];
+  entries.forEach(function(e){ ws.push([e.num,e.dt,e.mgr||'',e.ss||'',e.sn||'',e.hs||'',e.hn||'',e.sr,e.hr]); });
+
+  var wb = XLSX.utils.book_new();
+  var sh = XLSX.utils.aoa_to_sheet(ws);
+  sh['!cols'] = [{wch:6},{wch:18},{wch:10},{wch:20},{wch:8},{wch:20},{wch:8},{wch:8},{wch:8}];
   XLSX.utils.book_append_sheet(wb, sh, '시리얼등록');
-  XLSX.writeFile(wb, '시리얼기록_'+new Date().toISOString().slice(0,10)+'.xlsx');
-  showToast("다운로드가 완료되었습니다.");
+
+  // ★ iOS Safari 호환: writeFile 대신 Blob URL 방식
+  try {
+    var wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+    var blob  = new Blob([wbout], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    var url   = URL.createObjectURL(blob);
+    var fname = '시리얼기록_' + new Date().toISOString().slice(0,10) + '.xlsx';
+
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = fname;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
+
+    // 안내 모달
+    setTimeout(function(){
+      showM('<div class="mhandle"></div>'+
+        '<div class="mico xl"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>'+
+        '<div class="mh2">엑셀 파일 저장 완료</div>'+
+        '<div class="mp">파일이 다운로드되었습니다.<br>메일 첨부를 원하시면 아래 순서를 따라주세요.</div>'+
+        '<div class="msteps"><b>📎 아이폰 메일 첨부 방법</b><br>① <b>파일 앱</b> → 다운로드 폴더에서 파일 확인<br>② 파일 <b>길게 누르기</b> → <b>공유</b> 선택<br>③ <b>메일</b> → 수신자 입력 → 전송<br>④ 카카오톡·Google Drive 공유도 가능</div>'+
+        '<div class="mbtns"><button class="mbtn pri" onclick="hideM()">확인</button></div>');
+    }, 600);
+
+  } catch(err) {
+    showToast('저장 실패: ' + err.message);
+  }
 }
 
-function saveSettings() {
-  localStorage.setItem('sr_gasUrl', document.getElementById('gasUrl').value.trim());
-  showToast('설정 저장 완료');
-}
+/* ═══════ 설정 ═══════ */
+function loadSettings(){ gasUrl=localStorage.getItem('sr_gasUrl')||''; sheetName=localStorage.getItem('sr_sName')||''; var u=document.getElementById('gasUrl');var s=document.getElementById('sName');if(u)u.value=gasUrl;if(s)s.value=sheetName; }
+function doSaveSet(){ gasUrl=document.getElementById('gasUrl').value.trim(); sheetName=document.getElementById('sName').value.trim(); localStorage.setItem('sr_gasUrl',gasUrl); localStorage.setItem('sr_sName',sheetName); showToast('✓ 설정이 저장되었습니다'); }
+function copyGas(){ navigator.clipboard.writeText(GAS_CODE).then(function(){showToast('✓ 코드 복사 완료');}).catch(function(){showToast('직접 선택해서 복사해주세요');}); }
 
-let toastTmr;
-function showToast(m) {
-  const t = document.getElementById('toast');
-  t.textContent = m; t.classList.add('on');
-  clearTimeout(toastTmr);
-  toastTmr = setTimeout(() => t.classList.remove('on'), 2500);
-}
+/* ═══════ 토스트 ═══════ */
+var toastTmr;
+function showToast(m){ var t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastTmr);toastTmr=setTimeout(function(){t.classList.remove('on');},2500); }
 </script>
 </body>
 </html>
