@@ -1,4 +1,4 @@
-
+```html
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -47,7 +47,7 @@ html, body {
 /* ── 하단 네비 ── */
 #nav { display:flex; flex-shrink:0; background:var(--dk); border-top:2px solid var(--p); height:56px; }
 .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; background:none; border:none; color:rgba(255,255,255,0.4); font-weight:700; cursor:pointer; font-size:11px; }
-.nav-item svg { width:22px; height:22px; flex-shrink:0; } /* 아이콘 깨짐/커짐 방지 옵션 */
+.nav-item svg { width:22px; height:22px; flex-shrink:0; }
 .nav-item.active { color:#fff; border-top:3px solid #fff; margin-top:-2px; }
 .badge { position:absolute; top:4px; right:calc(50% - 20px); background:#e74c3c; color:#fff; font-size:9px; font-weight:700; min-width:14px; height:14px; border-radius:7px; display:flex; align-items:center; justify-content:center; }
 
@@ -134,7 +134,7 @@ input.h-range::-webkit-slider-thumb { background:var(--gn); }
             <div class="sec-name">주제</div>
             <button class="sec-btn" onclick="openCam('subject')">📷 QR 스캔 (유효기간+LOT)</button>
           </div>
-          <div class="input-row"><div class="input-label">데이터</div><input class="input-field" id="s-serial" type="text" placeholder="LOT / 유효기간"></div>
+          <div class="input-row"><div class="input-label">데이터</div><input class="input-field" id="s-serial" type="text" placeholder="LOT/유효기간 (스캔시 자동추출)"></div>
           <div class="input-row"><div class="input-label">넘버</div><input class="input-field" id="s-num" type="text" placeholder="넘버 (스캔불가 시)"></div>
           <div class="input-row"><div class="input-label" style="color:var(--gn)">잔여(kg)</div><input class="input-field" id="s-rem" type="text" inputmode="decimal" placeholder="숫자만 입력" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');"></div>
         </div>
@@ -145,7 +145,7 @@ input.h-range::-webkit-slider-thumb { background:var(--gn); }
             <div class="sec-name">경화제</div>
             <button class="sec-btn" onclick="openCam('hardener')">📷 QR 스캔 (유효기간+LOT)</button>
           </div>
-          <div class="input-row"><div class="input-label">데이터</div><input class="input-field" id="h-serial" type="text" placeholder="LOT / 유효기간"></div>
+          <div class="input-row"><div class="input-label">데이터</div><input class="input-field" id="h-serial" type="text" placeholder="LOT/유효기간 (스캔시 자동추출)"></div>
           <div class="input-row"><div class="input-label">넘버</div><input class="input-field" id="h-num" type="text" placeholder="넘버 (스캔불가 시)"></div>
           <div class="input-row"><div class="input-label" style="color:var(--gn)">잔여(kg)</div><input class="input-field" id="h-rem" type="text" inputmode="decimal" placeholder="숫자만 입력" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');"></div>
         </div>
@@ -171,11 +171,11 @@ input.h-range::-webkit-slider-thumb { background:var(--gn); }
           </div>
         </div>
 
-        <!-- 비고란 추가 -->
+        <!-- 비고란 (QR 원본 디버그 용도 겸용) -->
         <div class="sec-card" style="margin-bottom: 4px;">
           <div class="input-row" style="border-top:none;">
             <div class="input-label" style="color:var(--mt);">비고</div>
-            <input class="input-field" id="note-inp" type="text" placeholder="특이사항 입력 (선택)">
+            <input class="input-field" id="note-inp" type="text" placeholder="특이사항 입력 (스캔 시 원본 텍스트 자동표시)">
           </div>
         </div>
 
@@ -242,8 +242,7 @@ input.h-range::-webkit-slider-thumb { background:var(--gn); }
 <div id="toast"></div>
 
 <script>
-// 데이터 구조 최신 버전
-let entries = JSON.parse(localStorage.getItem('sr_v18') || '[]');
+let entries = JSON.parse(localStorage.getItem('sr_v19') || '[]');
 let codeReader = null;
 let currentStream = null;
 let pendingData = null; 
@@ -263,7 +262,6 @@ function clock() {
   document.getElementById('clock-el').textContent = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
-/* 개별 비율 업데이트 로직 */
 function updateRatio(type, val) {
   if (type === 's') {
     document.getElementById('val-s').textContent = val + '%';
@@ -282,72 +280,44 @@ function goTab(tab, btn) {
   if(tab === 'list') renderList();
 }
 
-/* ★ 1. 영문 제외 LOT 추출 / 2. 유효기간(EXP, 사용기한) 및 주/년 포맷 인식 추가 / 3. 유효기간 미기재 시 제조일+1년 자동계산 로직 ★ */
+/* ★ 매우 강력한 정규식: 무조건 숫자-숫자-숫자 패턴 / 날짜 형태 강제 추출 ★ */
 function extractQRData(rawText) {
   let lot = "";
   let expDate = "";
 
-  // 1. LOT 추출 (영문자를 제외한 '숫자-숫자-숫자' 패턴)
-  const lotMatch = rawText.match(/\b(\d{5,}-\d+(?:-\d+)?)\b/);
+  // 1. LOT 추출 (숫자와 하이픈(-) 조합만 강제로 가져옴. 영문 무조건 스킵)
+  const lotMatch = rawText.match(/(\d{4,}-\d+-\d+)/);
   if (lotMatch && lotMatch[1]) {
     lot = lotMatch[1];
-  } else {
-    const fallback = rawText.match(/(?:LOT|L\/N|BATCH)[\sA-Za-z:-]*([0-9-]+)/i);
-    if(fallback && fallback[1]) lot = fallback[1].replace(/^-/, '').trim();
   }
 
-  // 2. 명시적인 유효기간 텍스트 추출 (Used before, Use before, Expire, EXP, 유효기간)
-  // 뒤에 오는 형태: YYYY-MM-DD, DD/MM/YYYY, 주/년(예:45/26), 월/년(04/27)
-  const expKeywordMatch = rawText.match(/(?:use[\s_]*before|used[\s_]*before|expire|exp|유효)[\s:,-]*((?:20)?\d{2}[-./]?\d{1,2}[-./]?\d{1,2}|\d{1,2}\/\d{2,4})/i);
-  
-  if (expKeywordMatch && expKeywordMatch[1]) {
-    expDate = expKeywordMatch[1];
+  // 2. 유효기간 날짜 추출 (YYYY-MM-DD)
+  const dateMatches = rawText.match(/(20\d{2}[-./]\d{2}[-./]\d{2})/g);
+  if (dateMatches && dateMatches.length > 0) {
+    // 날짜가 여러개면 정렬해서 가장 늦은 미래 날짜(유효기간) 선택
+    dateMatches.sort();
+    expDate = dateMatches[dateMatches.length - 1];
   } else {
-    // 키워드가 없으면 QR코드 안의 모든 날짜 중 가장 큰 값(가장 미래)을 유효기간으로 간주
-    const allDates = rawText.match(/\b(20\d{2}[-./]\d{2}[-./]\d{2})\b/g);
-    if (allDates && allDates.length > 0) {
-      expDate = allDates.sort()[allDates.length - 1];
-    } else {
-      // "주/년" 포맷만 단독으로 있을 경우 (예: 45/26, 45/2026) -> 제조일자(PROD, MFG) 근처 제외
-      const weekYearMatch = rawText.match(/(?<!(?:prod|mfg|제조)[\s:,-]*)\b([0-5]?\d\/\d{2,4})\b/i);
-      if (weekYearMatch && weekYearMatch[1]) {
-        expDate = weekYearMatch[1];
-      }
+    // 3. (주/년 형식 예: 45/26) 단독 패턴 검색
+    const weekYearMatch = rawText.match(/\b([0-5]?\d\/[2-3]\d)\b/);
+    if (weekYearMatch) {
+      expDate = weekYearMatch[1];
     }
   }
 
-  // 3. 만능 대비책: QR코드에 유효기간이 아예 없고, LOT 번호에 제조일(YYMMDD)만 숨어있는 경우!
-  // 사진의 라벨(12개월 유효)을 기준으로 제조일에 +1년을 자동 계산해 줍니다.
-  if (!expDate && lot) {
-    const yyMmDdMatch = lot.match(/^(\d{2})(\d{2})(\d{2})/); // LOT 앞 6자리 (예: 260403)
-    if (yyMmDdMatch) {
-      const yy = parseInt(yyMmDdMatch[1]);
-      const mm = parseInt(yyMmDdMatch[2]);
-      const dd = parseInt(yyMmDdMatch[3]);
-      
-      // 유효기간 = 제조년도(2000+yy) + 1년
-      let parsedDate = new Date(2000 + yy + 1, mm - 1, dd - 1); 
-      
-      let resY = parsedDate.getFullYear();
-      let resM = String(parsedDate.getMonth() + 1).padStart(2, '0');
-      let resD = String(parsedDate.getDate()).padStart(2, '0');
-      
-      expDate = `${resY}-${resM}-${resD} (자동계산)`;
-    }
-  }
-
-  // 결과 조합
+  // 매칭되는 결과가 있으면 병합 후 반환
   if (lot || expDate) {
     let res = [];
     if(lot) res.push(lot);
-    if(expDate) res.push("EXP: " + expDate);
+    if(expDate) res.push("EXP:" + expDate);
     return res.join(" / ");
   }
 
-  return rawText.trim(); 
+  // ★ 아무것도 안잡히면 숫자와 하이픈만 억지로 뜯어냄 (영문 완전 제거)
+  return rawText.replace(/[a-zA-Z]/g, '').trim(); 
 }
 
-/* 카메라 (QR코드 전용으로 제한) */
+/* 카메라 */
 async function openCam(target) {
   document.getElementById('cam-wrap').style.display = 'flex';
   
@@ -365,10 +335,14 @@ async function openCam(target) {
       if (result) {
         if (navigator.vibrate) navigator.vibrate(80);
         
-        // 원본 데이터를 파싱 함수에 통과시켜 핵심 정보만 남김
-        const parsedData = extractQRData(result.getText());
+        const rawText = result.getText();
+        const parsedData = extractQRData(rawText);
         
         document.getElementById(target === 'subject' ? 's-serial' : 'h-serial').value = parsedData;
+        
+        // ★ 디버그를 위해 원본 텍스트를 비고란에 자동 삽입 ★
+        document.getElementById('note-inp').value = "원본: " + rawText;
+
         closeCam(); toast("QR 스캔 완료!");
       }
     });
@@ -434,7 +408,7 @@ function forceSubmit() {
   };
 
   entries.push(entry);
-  localStorage.setItem('sr_v18', JSON.stringify(entries));
+  localStorage.setItem('sr_v19', JSON.stringify(entries));
 
   ['s-serial', 's-num', 's-rem', 'h-serial', 'h-num', 'h-rem', 'qty-total', 'note-inp'].forEach(id => document.getElementById(id).value = '');
   pendingData = null;
@@ -464,7 +438,7 @@ function renderList() {
       
       <div class="data-row">
         <span>물량: <b style="color:var(--p);">${e.qty || 0}</b></span>
-        <span>잔여: S <b style="color:var(--gn);">${e.remS || 0}</b>kg / H <b style="color:var(--gn);">${e.remH || 0}</b>kg</span>
+        <span>잔여: S <b style="color:var(--gn);">${e.remS || 0}</b> / H <b style="color:var(--gn);">${e.remH || 0}</b></span>
       </div>
       
       <div style="margin-top:8px; font-size:12px; color:var(--p); font-weight:700;">비율 S ${e.sr}% : H ${e.hr}% | ${e.mgr || '담당자 미상'}</div>
@@ -473,8 +447,8 @@ function renderList() {
   `).join('');
 }
 
-function delE(id) { entries = entries.filter(e => e.id !== id); entries.forEach((e,i) => e.num = i+1); localStorage.setItem('sr_v18', JSON.stringify(entries)); updateBadge(); renderList(); }
-function clearAll() { if(confirm("전체 삭제하시겠습니까?")){ entries=[]; localStorage.removeItem('sr_v18'); updateBadge(); renderList(); } }
+function delE(id) { entries = entries.filter(e => e.id !== id); entries.forEach((e,i) => e.num = i+1); localStorage.setItem('sr_v19', JSON.stringify(entries)); updateBadge(); renderList(); }
+function clearAll() { if(confirm("전체 삭제하시겠습니까?")){ entries=[]; localStorage.removeItem('sr_v19'); updateBadge(); renderList(); } }
 function updateBadge() { const b = document.getElementById('badge'); if(entries.length>0){ b.style.display='flex'; b.textContent=entries.length; } else b.style.display='none'; }
 
 function saveSettings() {
