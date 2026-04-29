@@ -22,7 +22,10 @@ html, body { width:100%; height:100%; font-family:'Noto Sans KR',sans-serif; bac
 .tab-page.active { display:flex; }
 
 /* 하단 네비 */
-#nav { display:flex; flex-shrink:0; background:#0f3d55; border-top:2px solid rgba(255,255,255,0.08); height:62px; padding-bottom:env(safe-area-inset-bottom,0px); box-sizing:content-box; }
+#nav { display:flex; flex-shrink:0; background:#0f3d55; border-top:2px solid rgba(255,255,255,0.08); height:62px; padding-bottom:20px; box-sizing:content-box; }
+@supports(padding-bottom: env(safe-area-inset-bottom)) {
+  #nav { padding-bottom:max(20px, env(safe-area-inset-bottom)); }
+}
 .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; background:none; border:none; color:rgba(255,255,255,0.35); font-weight:700; cursor:pointer; font-size:10px; position:relative; transition:color 0.18s; }
 .nav-icon { width:26px; height:26px; display:flex; align-items:center; justify-content:center; border-radius:8px; transition:background 0.18s,transform 0.18s; }
 .nav-item.active { color:#ffffff; }
