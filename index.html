@@ -1,5 +1,5 @@
-```html
 <!DOCTYPE html>
+
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -10,9 +10,8 @@
 <meta name="theme-color" content="#0f3d55">
 <title>시리얼 등록 시스템</title>
 
-<!-- 안정적인 바코드/QR 스캐너 엔진 (ZXing) -->
 <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
-<!-- 엑셀 저장 엔진 -->
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
@@ -45,19 +44,53 @@ html, body {
 .tab-page.active { display:flex; }
 
 /* ── 하단 네비 ── */
-#nav { display:flex; flex-shrink:0; background:var(--dk); border-top:2px solid var(--p); height:56px; }
-.nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; background:none; border:none; color:rgba(255,255,255,0.4); font-weight:700; cursor:pointer; font-size:11px; }
-.nav-item svg { width:22px; height:22px; flex-shrink:0; }
-.nav-item.active { color:#fff; border-top:3px solid #fff; margin-top:-2px; }
-.badge { position:absolute; top:4px; right:calc(50% - 20px); background:#e74c3c; color:#fff; font-size:9px; font-weight:700; min-width:14px; height:14px; border-radius:7px; display:flex; align-items:center; justify-content:center; }
+#nav {
+  display:flex; flex-shrink:0;
+  background:var(--dk);
+  border-top:2px solid rgba(255,255,255,0.08);
+  height:62px;
+}
+.nav-item {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:4px;
+  background:none; border:none;
+  color:rgba(255,255,255,0.35);
+  font-weight:700; cursor:pointer; font-size:10px;
+  letter-spacing:0.3px;
+  position:relative;
+  transition: color 0.18s;
+}
+.nav-item .nav-icon {
+  width:26px; height:26px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:8px;
+  transition: background 0.18s, transform 0.18s;
+}
+.nav-item.active { color:#fff; }
+.nav-item.active .nav-icon {
+  background: rgba(255,255,255,0.15);
+  transform: translateY(-1px);
+}
+.nav-item.active::after {
+  content:'';
+  position:absolute; top:0; left:20%; right:20%; height:2px;
+  background:#fff; border-radius:0 0 2px 2px;
+}
+.nav-item svg { width:20px; height:20px; flex-shrink:0; }
+.badge {
+  position:absolute; top:6px; right:calc(50% - 22px);
+  background:#e74c3c; color:#fff; font-size:9px; font-weight:700;
+  min-width:15px; height:15px; border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  padding:0 3px;
+  border:1.5px solid var(--dk);
+}
 
 /* ════════ PAGE 1 — 입력 ════════ */
 .scroll-wrap { flex:1; padding:12px; display:flex; flex-direction:column; gap:12px; }
 
-/* 시간 표시 */
 .clock-wrap { text-align:right; font-size:12px; color:var(--mt); font-weight:700; margin-bottom:-4px; padding-right:4px; }
 
-/* 상단 정보 카드 */
 .top-card { display:flex; flex-direction:column; gap:10px; background:var(--wh); border:1px solid var(--bd); border-radius:10px; padding:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
 .info-row { display:flex; gap:8px; width:100%; }
 .info-inp { flex:1; border:1.5px solid var(--bd); border-radius:6px; background:var(--cd); padding:10px; font-size:14px; color:var(--tx); outline:none; min-width:0; }
@@ -66,7 +99,6 @@ html, body {
 .qty-inp { flex:1; border:1.5px solid var(--p); border-radius:6px; background:#fffbe6; padding:10px; font-size:14px; color:var(--tx); outline:none; font-weight:700; min-width:0; }
 .qty-inp:focus { background:#fff; }
 
-/* 주제 / 경화제 카드 */
 .sec-card { background:var(--wh); border:1px solid var(--bd); border-radius:10px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
 .sec-head { display:flex; height:42px; }
 .sec-name { background:var(--dk); color:#fff; width:72px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; }
@@ -78,7 +110,6 @@ html, body {
 .input-field::placeholder { color:#ccc; font-size:13px; }
 .input-field:focus { background:#f0f8ff; border-left:2px solid var(--p); }
 
-/* 비율 카드 (개별 입력) */
 .ratio-card { background:var(--wh); border:1px solid var(--bd); border-radius:10px; padding:16px; }
 input[type=range] { -webkit-appearance:none; width:100%; height:10px; border-radius:5px; background:var(--cd); margin:10px 0 0 0; outline:none; }
 input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:28px; height:28px; border-radius:50%; background:var(--p); border:3px solid #fff; box-shadow:0 2px 5px rgba(0,0,0,0.3); }
@@ -93,7 +124,7 @@ input.h-range::-webkit-slider-thumb { background:var(--gn); }
 .data-row { display: flex; justify-content: space-between; font-size: 13px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #eee; color: #555; }
 .tag-ship { position:absolute; top:12px; right:35px; background:var(--cd); color:var(--dk); font-size:11px; font-weight:700; padding:4px 8px; border-radius:4px; }
 
-/* ════════ 모달 (카메라 & 중복경고) ════════ */
+/* ════════ 모달 ════════ */
 #cam-wrap { position:fixed; inset:0; background:#000; z-index:1000; display:none; flex-direction:column; }
 #cam-video { width:100%; height:100%; object-fit:cover; }
 .cam-hdr { padding:15px; display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.8); color:#fff; }
@@ -106,6 +137,7 @@ input.h-range::-webkit-slider-thumb { background:var(--gn); }
 #toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.9); color:#fff; padding:12px 24px; border-radius:20px; font-size:14px; z-index:2000; opacity:0; transition:0.3s; pointer-events:none; }
 #toast.on { opacity:1; }
 </style>
+
 </head>
 <body>
 <div id="app">
@@ -114,111 +146,145 @@ input.h-range::-webkit-slider-thumb { background:var(--gn); }
     <div class="tab-page active" id="pg-main">
       <div class="scroll-wrap">
         <div class="clock-wrap" id="clock-el">--.--.--</div>
-        
-        <!-- 기본 정보 -->
-        <div class="top-card">
-          <div class="info-row">
-            <input class="info-inp" id="ship-inp" type="text" placeholder="호선/블록명">
-            <input class="info-inp" id="mgr-inp" type="text" placeholder="담당자">
-          </div>
-          <div class="info-row" style="align-items:center;">
-            <div class="qty-label">작업 물량</div>
-            <input class="qty-inp" id="qty-total" type="text" inputmode="decimal" placeholder="숫자만 입력" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');">
-          </div>
-        </div>
 
-        <!-- 주제 -->
-        <div class="sec-card">
-          <div class="sec-head">
-            <div class="sec-name">주제</div>
-            <button class="sec-btn" onclick="openCam('subject')">📷 QR 스캔 (유효기간+LOT)</button>
-          </div>
-          <div class="input-row"><div class="input-label">데이터</div><input class="input-field" id="s-serial" type="text" placeholder="LOT/유효기간 (스캔시 자동추출)"></div>
-          <div class="input-row"><div class="input-label">넘버</div><input class="input-field" id="s-num" type="text" placeholder="넘버 (스캔불가 시)"></div>
-          <div class="input-row"><div class="input-label" style="color:var(--gn)">잔여(kg)</div><input class="input-field" id="s-rem" type="text" inputmode="decimal" placeholder="숫자만 입력" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');"></div>
-        </div>
-
-        <!-- 경화제 -->
-        <div class="sec-card">
-          <div class="sec-head">
-            <div class="sec-name">경화제</div>
-            <button class="sec-btn" onclick="openCam('hardener')">📷 QR 스캔 (유효기간+LOT)</button>
-          </div>
-          <div class="input-row"><div class="input-label">데이터</div><input class="input-field" id="h-serial" type="text" placeholder="LOT/유효기간 (스캔시 자동추출)"></div>
-          <div class="input-row"><div class="input-label">넘버</div><input class="input-field" id="h-num" type="text" placeholder="넘버 (스캔불가 시)"></div>
-          <div class="input-row"><div class="input-label" style="color:var(--gn)">잔여(kg)</div><input class="input-field" id="h-rem" type="text" inputmode="decimal" placeholder="숫자만 입력" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');"></div>
-        </div>
-
-        <!-- 비율 설정 -->
-        <div class="ratio-card">
-          <div style="font-size:13px; font-weight:700; margin-bottom:16px; text-align:center; color:var(--mt);">개별 비율 설정</div>
-          
-          <div style="margin-bottom:20px;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-              <span style="font-size:14px; font-weight:700; color:var(--p);">주제</span>
-              <span style="font-size:14px; font-weight:700; color:var(--p);" id="val-s">100%</span>
-            </div>
-            <input type="range" id="sl-s" min="0" max="100" value="100" oninput="updateRatio('s', this.value)">
-          </div>
-
-          <div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-              <span style="font-size:14px; font-weight:700; color:var(--gn);">경화제</span>
-              <span style="font-size:14px; font-weight:700; color:var(--gn);" id="val-h">100%</span>
-            </div>
-            <input type="range" class="h-range" id="sl-h" min="0" max="100" value="100" oninput="updateRatio('h', this.value)">
-          </div>
-        </div>
-
-        <!-- 비고란 -->
-        <div class="sec-card" style="margin-bottom: 4px;">
-          <div class="input-row" style="border-top:none;">
-            <div class="input-label" style="color:var(--mt);">비고</div>
-            <input class="input-field" id="note-inp" type="text" placeholder="특이사항 입력 (스캔 시 원본텍스트 확인 가능)">
-          </div>
-        </div>
-
-        <button class="reg-btn" onclick="doSubmit()">데이터 등록 완료</button>
+```
+    <div class="top-card">
+      <div class="info-row">
+        <input class="info-inp" id="ship-inp" type="text" placeholder="호선/블록명">
+        <input class="info-inp" id="mgr-inp" type="text" placeholder="담당자">
+      </div>
+      <div class="info-row" style="align-items:center;">
+        <div class="qty-label">작업 물량</div>
+        <input class="qty-inp" id="qty-total" type="text" inputmode="decimal" placeholder="숫자만 입력" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');">
       </div>
     </div>
 
-    <!-- 탭 2: 목록 -->
-    <div class="tab-page" id="pg-list">
-      <div style="display:flex; background:var(--dk); padding:10px; gap:8px;">
-        <input class="list-search" id="list-search" type="text" placeholder="검색어 입력..." oninput="renderList()">
-        <button onclick="clearAll()" style="color:#fff; background:none; border:1px solid #fff; border-radius:6px; padding:0 12px; font-size:12px;">초기화</button>
+    <div class="sec-card">
+      <div class="sec-head">
+        <div class="sec-name">주제</div>
+        <button class="sec-btn" onclick="openCam('subject')">📷 QR 스캔 (유효기간+LOT)</button>
       </div>
-      <div class="list-body" id="list-body"></div>
-      <div style="padding:12px; background:var(--dk);"><button onclick="doExcel()" style="width:100%; padding:14px; background:var(--gn); color:#fff; border:none; border-radius:8px; font-weight:700; font-size:15px;">📊 엑셀 다운로드</button></div>
+      <div class="input-row"><div class="input-label">데이터</div><input class="input-field" id="s-serial" type="text" placeholder="LOT/유효기간 (스캔시 자동추출)"></div>
+      <div class="input-row"><div class="input-label">넘버</div><input class="input-field" id="s-num" type="text" placeholder="넘버 (스캔불가 시)"></div>
+      <div class="input-row"><div class="input-label" style="color:var(--gn)">잔여(kg)</div><input class="input-field" id="s-rem" type="text" inputmode="decimal" placeholder="숫자만 입력" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');"></div>
     </div>
-    
-    <!-- 탭 3: 설정 -->
-    <div class="tab-page" id="pg-set">
-      <div style="padding:16px;">
-        <div style="background:var(--wh); border:1px solid var(--bd); border-radius:10px; padding:16px;">
-          <div style="font-size:13px; font-weight:700; color:var(--dk); margin-bottom:8px;">구글 시트 연동 URL</div>
-          <input style="width:100%; padding:12px; border:1px solid var(--bd); border-radius:8px; outline:none; font-size:14px;" id="gas-url" type="text" placeholder="https://script.google.com/macros/s/...">
-          <button class="reg-btn" style="margin-top:14px;" onclick="saveSettings()">설정 저장</button>
-        </div>
+
+    <div class="sec-card">
+      <div class="sec-head">
+        <div class="sec-name">경화제</div>
+        <button class="sec-btn" onclick="openCam('hardener')">📷 QR 스캔 (유효기간+LOT)</button>
       </div>
+      <div class="input-row"><div class="input-label">데이터</div><input class="input-field" id="h-serial" type="text" placeholder="LOT/유효기간 (스캔시 자동추출)"></div>
+      <div class="input-row"><div class="input-label">넘버</div><input class="input-field" id="h-num" type="text" placeholder="넘버 (스캔불가 시)"></div>
+      <div class="input-row"><div class="input-label" style="color:var(--gn)">잔여(kg)</div><input class="input-field" id="h-rem" type="text" inputmode="decimal" placeholder="숫자만 입력" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');"></div>
+    </div>
+
+    <div class="ratio-card">
+      <div style="font-size:13px; font-weight:700; margin-bottom:16px; text-align:center; color:var(--mt);">개별 비율 설정</div>
+      <div style="margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+          <span style="font-size:14px; font-weight:700; color:var(--p);">주제</span>
+          <span style="font-size:14px; font-weight:700; color:var(--p);" id="val-s">100%</span>
+        </div>
+        <input type="range" id="sl-s" min="0" max="100" value="100" oninput="updateRatio('s', this.value)">
+      </div>
+      <div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+          <span style="font-size:14px; font-weight:700; color:var(--gn);">경화제</span>
+          <span style="font-size:14px; font-weight:700; color:var(--gn);" id="val-h">100%</span>
+        </div>
+        <input type="range" class="h-range" id="sl-h" min="0" max="100" value="100" oninput="updateRatio('h', this.value)">
+      </div>
+    </div>
+
+    <div class="sec-card" style="margin-bottom: 4px;">
+      <div class="input-row" style="border-top:none;">
+        <div class="input-label" style="color:var(--mt);">비고</div>
+        <input class="input-field" id="note-inp" type="text" placeholder="특이사항 입력 (선택)">
+      </div>
+    </div>
+
+    <button class="reg-btn" onclick="doSubmit()">데이터 등록 완료</button>
+  </div>
+</div>
+
+<!-- 탭 2: 목록 -->
+<div class="tab-page" id="pg-list">
+  <div style="display:flex; background:var(--dk); padding:10px; gap:8px;">
+    <input class="list-search" id="list-search" type="text" placeholder="검색어 입력..." oninput="renderList()">
+    <button onclick="clearAll()" style="color:#fff; background:none; border:1px solid #fff; border-radius:6px; padding:0 12px; font-size:12px;">초기화</button>
+  </div>
+  <div class="list-body" id="list-body"></div>
+  <div style="padding:12px; background:var(--dk);"><button onclick="doExcel()" style="width:100%; padding:14px; background:var(--gn); color:#fff; border:none; border-radius:8px; font-weight:700; font-size:15px;">📊 엑셀 다운로드</button></div>
+</div>
+
+<!-- 탭 3: 설정 -->
+<div class="tab-page" id="pg-set">
+  <div style="padding:16px;">
+    <div style="background:var(--wh); border:1px solid var(--bd); border-radius:10px; padding:16px;">
+      <div style="font-size:13px; font-weight:700; color:var(--dk); margin-bottom:8px;">구글 시트 연동 URL</div>
+      <input style="width:100%; padding:12px; border:1px solid var(--bd); border-radius:8px; outline:none; font-size:14px;" id="gas-url" type="text" placeholder="https://script.google.com/macros/s/...">
+      <button class="reg-btn" style="margin-top:14px;" onclick="saveSettings()">설정 저장</button>
     </div>
   </div>
+</div>
+```
+
+  </div>
+
+  <!-- ★ 하단 네비 — 아이콘 개선 ★ -->
 
   <nav id="nav">
+    <!-- 입력 탭: 연필+문서 아이콘 -->
     <button class="nav-item active" onclick="goTab('main', this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> 입력
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="3" width="14" height="18" rx="2"/>
+          <line x1="8" y1="8" x2="14" y2="8"/>
+          <line x1="8" y1="12" x2="14" y2="12"/>
+          <path d="M13 16l2-2 2 2" stroke-width="1.8"/>
+        </svg>
+      </div>
+      입력
     </button>
-    <button class="nav-item" style="position:relative;" onclick="goTab('list', this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg> 목록
-      <span class="badge" id="badge" style="display:none">0</span>
-    </button>
-    <button class="nav-item" onclick="goTab('set', this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> 설정
-    </button>
+
+```
+<!-- 목록 탭: 클립보드+리스트 아이콘 -->
+<button class="nav-item" style="position:relative;" onclick="goTab('list', this)">
+  <div class="nav-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="5" y="2" width="14" height="20" rx="2"/>
+      <path d="M9 2v2h6V2"/>
+      <line x1="9" y1="10" x2="15" y2="10"/>
+      <line x1="9" y1="14" x2="15" y2="14"/>
+      <line x1="9" y1="18" x2="13" y2="18"/>
+    </svg>
+  </div>
+  목록
+  <span class="badge" id="badge" style="display:none">0</span>
+</button>
+
+<!-- 설정 탭: 슬라이더(조정) 아이콘 -->
+<button class="nav-item" onclick="goTab('set', this)">
+  <div class="nav-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="4" y1="6" x2="20" y2="6"/>
+      <line x1="4" y1="12" x2="20" y2="12"/>
+      <line x1="4" y1="18" x2="20" y2="18"/>
+      <circle cx="8" cy="6" r="2" fill="currentColor" stroke="none"/>
+      <circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/>
+      <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"/>
+    </svg>
+  </div>
+  설정
+</button>
+```
+
   </nav>
 </div>
 
 <!-- 중복 경고 모달 -->
+
 <div id="confirm-modal">
   <div class="confirm-box">
     <div style="font-size:48px; margin-bottom:10px;">⚠️</div>
@@ -234,6 +300,7 @@ input.h-range::-webkit-slider-thumb { background:var(--gn); }
 </div>
 
 <!-- 카메라 뷰 -->
+
 <div id="cam-wrap">
   <div class="cam-hdr"><span>QR 스캔</span><button onclick="closeCam()" style="color:#fff; background:none; border:none; font-size:15px;">✕ 닫기</button></div>
   <div style="flex:1; position:relative;"><video id="cam-video" playsinline autoplay muted></video><div class="cam-box"></div></div>
@@ -241,7 +308,7 @@ input.h-range::-webkit-slider-thumb { background:var(--gn); }
 <div id="toast"></div>
 
 <script>
-let entries = JSON.parse(localStorage.getItem('sr_v20') || '[]');
+let entries = JSON.parse(localStorage.getItem('sr_v21') || '[]');
 let codeReader = null;
 let currentStream = null;
 let pendingData = null; 
@@ -279,35 +346,26 @@ function goTab(tab, btn) {
   if(tab === 'list') renderList();
 }
 
-/* ★ 제공해주신 원본 텍스트에 완벽하게 대응하는 강력한 정규식 ★ */
 function extractQRData(rawText) {
   let lot = "";
   let expDate = "";
 
-  // 1. LOT 추출 (Batch No 뒤의 숫자 패턴 강제 검출, 영문 완전 배제)
-  // 예: "Batch No : ULBMH 260403-00971-6" -> "260403-00971-6" 추출
-  const lotMatch = rawText.match(/\b(\d{5,}-\d+(?:-\d+)?)\b/);
+  const lotMatch = rawText.match(/(\d{4,}-\d+-\d+)/);
   if (lotMatch && lotMatch[1]) {
     lot = lotMatch[1];
   }
 
-  // 2. 유효기간(Used Before) 추출 
-  // 원본의 "Used Before : 14 / 2027" 형식에서 "14 / 2027"을 매칭!
-  const expKeywordMatch = rawText.match(/(?:used\s*before|use\s*before|expire|exp|유효)[\s:-]*(\d{1,2}\s*\/\s*\d{2,4})/i);
-  
-  if (expKeywordMatch && expKeywordMatch[1]) {
-    // 찾은 값에서 불필요한 공백 제거 (예: "14 / 2027" -> "14/2027")
-    expDate = expKeywordMatch[1].replace(/\s+/g, ''); 
+  const dateMatches = rawText.match(/(20\d{2}[-./]\d{2}[-./]\d{2})/g);
+  if (dateMatches && dateMatches.length > 0) {
+    dateMatches.sort();
+    expDate = dateMatches[dateMatches.length - 1];
   } else {
-    // 키워드가 없을 경우를 대비해 YYYY-MM-DD 형식 검출 후 가장 미래 시간 추출
-    const allDates = rawText.match(/\b(20\d{2}[-./]\d{2}[-./]\d{2})\b/g);
-    if (allDates && allDates.length > 0) {
-      allDates.sort();
-      expDate = allDates[allDates.length - 1];
+    const weekYearMatch = rawText.match(/\b([0-5]?\d\/[2-3]\d)\b/);
+    if (weekYearMatch) {
+      expDate = weekYearMatch[1];
     }
   }
 
-  // 매칭되는 결과가 있으면 병합 후 반환
   if (lot || expDate) {
     let res = [];
     if(lot) res.push(lot);
@@ -315,11 +373,9 @@ function extractQRData(rawText) {
     return res.join(" / ");
   }
 
-  // 실패 시 영문/한글 제거하고 출력
-  return rawText.replace(/[a-zA-Z가-힣]/g, '').trim(); 
+  return rawText.replace(/[a-zA-Z]/g, '').trim(); 
 }
 
-/* 카메라 (QR코드 전용) */
 async function openCam(target) {
   document.getElementById('cam-wrap').style.display = 'flex';
   
@@ -341,10 +397,6 @@ async function openCam(target) {
         const parsedData = extractQRData(rawText);
         
         document.getElementById(target === 'subject' ? 's-serial' : 'h-serial').value = parsedData;
-        
-        // ★ 디버그/추적용: 비고란에 원본 텍스트 자동 삽입
-        document.getElementById('note-inp').value = "[원본] " + rawText;
-
         closeCam(); toast("QR 스캔 완료!");
       }
     });
@@ -410,7 +462,7 @@ function forceSubmit() {
   };
 
   entries.push(entry);
-  localStorage.setItem('sr_v20', JSON.stringify(entries));
+  localStorage.setItem('sr_v21', JSON.stringify(entries));
 
   ['s-serial', 's-num', 's-rem', 'h-serial', 'h-num', 'h-rem', 'qty-total', 'note-inp'].forEach(id => document.getElementById(id).value = '');
   pendingData = null;
@@ -437,20 +489,18 @@ function renderList() {
       </div>
       <div style="font-size:14px; margin-bottom:4px;">주제: <b style="color:var(--tx);">${e.sub}</b></div>
       <div style="font-size:14px;">경화: <b style="color:var(--tx);">${e.har}</b></div>
-      
       <div class="data-row">
         <span>물량: <b style="color:var(--p);">${e.qty || 0}</b></span>
         <span>잔여: S <b style="color:var(--gn);">${e.remS || 0}</b> / H <b style="color:var(--gn);">${e.remH || 0}</b></span>
       </div>
-      
       <div style="margin-top:8px; font-size:12px; color:var(--p); font-weight:700;">비율 S ${e.sr}% : H ${e.hr}% | ${e.mgr || '담당자 미상'}</div>
       ${e.note ? `<div style="font-size:12px; color:#666; background:#f4f4f4; padding:6px 8px; border-radius:6px; margin-top:8px;">📌 ${e.note}</div>` : ''}
     </div>
   `).join('');
 }
 
-function delE(id) { entries = entries.filter(e => e.id !== id); entries.forEach((e,i) => e.num = i+1); localStorage.setItem('sr_v20', JSON.stringify(entries)); updateBadge(); renderList(); }
-function clearAll() { if(confirm("전체 삭제하시겠습니까?")){ entries=[]; localStorage.removeItem('sr_v20'); updateBadge(); renderList(); } }
+function delE(id) { entries = entries.filter(e => e.id !== id); entries.forEach((e,i) => e.num = i+1); localStorage.setItem('sr_v21', JSON.stringify(entries)); updateBadge(); renderList(); }
+function clearAll() { if(confirm("전체 삭제하시겠습니까?")){ entries=[]; localStorage.removeItem('sr_v21'); updateBadge(); renderList(); } }
 function updateBadge() { const b = document.getElementById('badge'); if(entries.length>0){ b.style.display='flex'; b.textContent=entries.length; } else b.style.display='none'; }
 
 function saveSettings() {
@@ -472,8 +522,6 @@ function doExcel() {
 let toastTmr;
 function toast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toastTmr); toastTmr = setTimeout(() => t.classList.remove('on'), 2500); }
 </script>
+
 </body>
 </html>
-
-
-```
