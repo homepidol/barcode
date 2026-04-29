@@ -324,28 +324,50 @@ function updateRatio(type, val) {
   }
 }
 
+function weekToDate(week, year) {
+  /* 1월1일 기준 (week-1)*7일 → YYYY-MM-DD */
+  var d = new Date(year, 0, 1);
+  d.setDate(1 + (week - 1) * 7);
+  return d.getFullYear() + '-' +
+    String(d.getMonth()+1).padStart(2,'0') + '-' +
+    String(d.getDate()).padStart(2,'0');
+}
+
 function extractQRData(raw) {
   var lot = '';
   var expDate = '';
-  var em = raw.match(/[Ee]xpir[a-z]*\s*[Dd]ate\s*[:\-]?\s*(\d{4}[-\.\/]\d{2}[-\.\/]\d{2})/);
-  if (em) {
-    expDate = em[1].replace(/[-\.\/]/g, '');
+
+  /* 1. Used Before: 주차/연도 형식 (예: 14 / 2027) */
+  var ubMatch = raw.match(/[Uu]sed\s*[Bb]efore\s*[\uff1a:]\s*(\d{1,2})\s*\/\s*(\d{4})/);
+  if (ubMatch) {
+    expDate = weekToDate(parseInt(ubMatch[1]), parseInt(ubMatch[2]));
   } else {
-    var da = raw.match(/(20\d{2}[-\.\/]\d{2}[-\.\/]\d{2})/g);
-    if (da && da.length > 0) { da.sort(); expDate = da[da.length-1].replace(/[-\.\/]/g, ''); }
+    /* 2. Expire Date 키워드 */
+    var em = raw.match(/[Ee]xpir[a-z]*\s*[Dd]ate\s*[\uff1a:\-]?\s*(\d{4}[-\.\/]\d{2}[-\.\/]\d{2})/);
+    if (em) {
+      expDate = em[1].replace(/[-\.\/]/g, '');
+    } else {
+      /* 3. 날짜 중 가장 늦은 것 */
+      var da = raw.match(/(20\d{2}[-\.\/]\d{2}[-\.\/]\d{2})/g);
+      if (da && da.length > 0) { da.sort(); expDate = da[da.length-1].replace(/[-\.\/]/g, ''); }
+    }
   }
-  var lm = raw.match(/[Ll]ot\s*[Nn]o\.?\s*[:\s]*([A-Za-z0-9][\w\s\-]+)/);
-  if (lm) {
-    lot = lm[1].trim().replace(/[A-Za-z\s]/g, '').replace(/^-+|-+$/g, '');
+
+  /* Batch No 또는 Lot No 뒤 숫자+하이픈만 */
+  var bm = raw.match(/[Bb]atch\s*[Nn]o\s*[\uff1a:]\s*([A-Za-z0-9][A-Za-z0-9\s\-]+)/);
+  if (bm) {
+    lot = bm[1].trim().replace(/[A-Za-z\s]/g,'').replace(/^-+|-+$/g,'');
   } else {
-    var lm2 = raw.match(/(\d{4,}[\-\d]+)/);
-    if (lm2) lot = lm2[1];
+    var lm = raw.match(/[Ll]ot\s*[Nn]o\.?\s*[\uff1a:\s]*([A-Za-z0-9][\w\s\-]+)/);
+    if (lm) { lot = lm[1].trim().replace(/[A-Za-z\s]/g,'').replace(/^-+|-+$/g,''); }
+    else { var lm2 = raw.match(/(\d{4,}[\-\d]+)/); if (lm2) lot = lm2[1]; }
   }
+
   var res = [];
   if (lot) res.push(lot);
   if (expDate) res.push(expDate);
   if (res.length > 0) return res.join(' / ');
-  return raw.replace(/[A-Za-z]/g, '').trim();
+  return raw.replace(/[A-Za-z]/g,'').trim();
 }
 
 function openCam(target) {
@@ -362,9 +384,7 @@ function openCam(target) {
         if (result) {
           if (navigator.vibrate) navigator.vibrate(80);
           var fieldId = (camTarget === 'subject') ? 's-serial' : 'h-serial';
-          var rawText = result.getText();
-          /* 진단용: raw 텍스트 그대로 표시 */
-          document.getElementById(fieldId).value = rawText;
+          document.getElementById(fieldId).value = extractQRData(result.getText());
           reader.reset();
           closeCam();
           toast('QR 스캔 완료!');
