@@ -277,7 +277,13 @@ var toastTmr;
 function addOneYear(dateStr) {
   var m = dateStr.match(/(20\d{2})([-./])(\d{2})([-./])(\d{2})/);
   if (m) {
-    return (parseInt(m[1], 10) + 1) + m[2] + m[3] + m[4] + m[5];
+    var sep = m[2];
+    var d = new Date(m[1] + '-' + m[3] + '-' + m[5]);
+    d.setDate(d.getDate() - 364);
+    var y  = d.getFullYear();
+    var mo = String(d.getMonth() + 1).padStart(2, '0');
+    var dd = String(d.getDate()).padStart(2, '0');
+    return y + sep + mo + sep + dd;
   }
   return dateStr;
 }
