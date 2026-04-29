@@ -337,7 +337,7 @@ function updateRatio(sliderVal) {
   val = Math.round(val * 10) / 10;
   document.getElementById('ratio-display').textContent = val.toFixed(1);
   document.getElementById('ratio-input').value = val.toFixed(1);
-  var pct = (parseFloat(sliderVal) / 2000) * 100;
+  var pct = (parseFloat(sliderVal) / 1000) * 100;
   document.getElementById('sl-h').style.background =
     'linear-gradient(to right,#27ae6e 0%,#27ae6e ' + pct + '%,#dde8f0 ' + pct + '%,#dde8f0 100%)';
 }
@@ -346,11 +346,11 @@ function syncRatioFromInput(v) {
   var num = parseFloat(v);
   if (isNaN(num)) return;
   if (num < 0) num = 0;
-  if (num > 200) num = 200;
+  if (num > 100) num = 100;
   document.getElementById('ratio-display').textContent = num.toFixed(1);
   var sliderVal = Math.round(num * 10);
   document.getElementById('sl-h').value = sliderVal;
-  var pct = (sliderVal / 2000) * 100;
+  var pct = (sliderVal / 1000) * 100;
   document.getElementById('sl-h').style.background =
     'linear-gradient(to right,#27ae6e 0%,#27ae6e ' + pct + '%,#dde8f0 ' + pct + '%,#dde8f0 100%)';
 }
