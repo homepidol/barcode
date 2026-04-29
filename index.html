@@ -149,20 +149,34 @@ input.h-range::-webkit-slider-thumb { background:#27ae6e; }
         </div>
 
         <div class="ratio-card">
-          <div style="font-size:13px;font-weight:700;margin-bottom:16px;text-align:center;color:#7a9aaa;">개별 비율 설정</div>
-          <div style="margin-bottom:20px;">
-            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-              <span style="font-size:14px;font-weight:700;color:#1a5a7a;">주제</span>
-              <span style="font-size:14px;font-weight:700;color:#1a5a7a;" id="val-s">100%</span>
+          <div style="font-size:13px;font-weight:700;margin-bottom:14px;text-align:center;color:#7a9aaa;">혼합 비율 설정 (주제 100 기준)</div>
+          <!-- 비율 표시 -->
+          <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:16px;">
+            <div style="text-align:center;">
+              <div style="font-size:11px;color:#7a9aaa;margin-bottom:2px;">주제</div>
+              <div style="font-size:22px;font-weight:900;color:#1a5a7a;">100</div>
             </div>
-            <input type="range" id="sl-s" min="0" max="100" value="100" oninput="updateRatio('s',this.value)">
+            <div style="font-size:22px;font-weight:700;color:#aaaaaa;">:</div>
+            <div style="text-align:center;">
+              <div style="font-size:11px;color:#7a9aaa;margin-bottom:2px;">경화제</div>
+              <div style="font-size:22px;font-weight:900;color:#27ae6e;" id="ratio-display">50.0</div>
+            </div>
           </div>
-          <div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-              <span style="font-size:14px;font-weight:700;color:#27ae6e;">경화제</span>
-              <span style="font-size:14px;font-weight:700;color:#27ae6e;" id="val-h">100%</span>
-            </div>
-            <input type="range" class="h-range" id="sl-h" min="0" max="100" value="100" oninput="updateRatio('h',this.value)">
+          <!-- 프로그레시브 바 -->
+          <input type="range" class="h-range" id="sl-h" min="0" max="1000" step="1" value="500" oninput="updateRatio(this.value)">
+          <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:#aaaaaa;">
+            <span>0</span><span>50</span><span>100</span>
+          </div>
+          <!-- 직접 입력 -->
+          <div style="display:flex;align-items:center;gap:8px;margin-top:14px;">
+            <span style="font-size:13px;color:#7a9aaa;white-space:nowrap;">직접 입력</span>
+            <input id="ratio-input" type="text" inputmode="decimal"
+              style="flex:1;border:1.5px solid #c0d4e4;border-radius:6px;padding:8px 12px;font-size:16px;font-weight:700;color:#27ae6e;outline:none;text-align:center;"
+              placeholder="예) 32.5"
+              oninput="syncRatioFromInput(this.value)"
+              onfocus="this.style.borderColor='#27ae6e'"
+              onblur="this.style.borderColor='#c0d4e4'">
+            <span style="font-size:13px;color:#7a9aaa;white-space:nowrap;">/ 100</span>
           </div>
         </div>
 
@@ -290,8 +304,7 @@ var toastTmr;
 document.addEventListener('DOMContentLoaded', function() {
   clock();
   setInterval(clock, 20000);
-  updateRatio('s', 100);
-  updateRatio('h', 100);
+  updateRatio(500); /* 초기값 50.0 */
   renderList();
   updateBadge();
   document.getElementById('mgr-inp').value  = localStorage.getItem('sr_last_mgr')  || '';
@@ -317,14 +330,29 @@ function goTab(tab, btn) {
   if (tab === 'list') renderList();
 }
 
-function updateRatio(type, val) {
-  if (type === 's') {
-    document.getElementById('val-s').textContent = val + '%';
-    document.getElementById('sl-s').style.background = 'linear-gradient(to right,#1a5a7a 0%,#1a5a7a ' + val + '%,#dde8f0 ' + val + '%,#dde8f0 100%)';
-  } else {
-    document.getElementById('val-h').textContent = val + '%';
-    document.getElementById('sl-h').style.background = 'linear-gradient(to right,#27ae6e 0%,#27ae6e ' + val + '%,#dde8f0 ' + val + '%,#dde8f0 100%)';
-  }
+function updateRatio(sliderVal) {
+  /* 슬라이더: 0~200 (내부값) → 0.0~200.0 (소숫점 한자리) */
+  var raw = parseFloat(sliderVal) / 10;  /* step=1, max=200 → 0.0~20.0 아님, max=2000 */
+  var val = parseFloat(sliderVal) / 10;
+  val = Math.round(val * 10) / 10;
+  document.getElementById('ratio-display').textContent = val.toFixed(1);
+  document.getElementById('ratio-input').value = val.toFixed(1);
+  var pct = (parseFloat(sliderVal) / 2000) * 100;
+  document.getElementById('sl-h').style.background =
+    'linear-gradient(to right,#27ae6e 0%,#27ae6e ' + pct + '%,#dde8f0 ' + pct + '%,#dde8f0 100%)';
+}
+
+function syncRatioFromInput(v) {
+  var num = parseFloat(v);
+  if (isNaN(num)) return;
+  if (num < 0) num = 0;
+  if (num > 200) num = 200;
+  document.getElementById('ratio-display').textContent = num.toFixed(1);
+  var sliderVal = Math.round(num * 10);
+  document.getElementById('sl-h').value = sliderVal;
+  var pct = (sliderVal / 2000) * 100;
+  document.getElementById('sl-h').style.background =
+    'linear-gradient(to right,#27ae6e 0%,#27ae6e ' + pct + '%,#dde8f0 ' + pct + '%,#dde8f0 100%)';
 }
 
 function weekToDate(week, year) {
@@ -438,8 +466,8 @@ function forceSubmit() {
     remS: document.getElementById('s-rem').value.trim(),
     remH: document.getElementById('h-rem').value.trim(),
     sub:  pendingData.sub, har: pendingData.har,
-    sr:   document.getElementById('sl-s').value,
-    hr:   document.getElementById('sl-h').value,
+    sr:   '100',
+    hr:   (parseFloat(document.getElementById('sl-h').value) / 10).toFixed(1),
     note: document.getElementById('note-inp').value.trim()
   };
   entries.push(entry);
