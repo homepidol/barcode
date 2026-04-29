@@ -362,7 +362,9 @@ function openCam(target) {
         if (result) {
           if (navigator.vibrate) navigator.vibrate(80);
           var fieldId = (camTarget === 'subject') ? 's-serial' : 'h-serial';
-          document.getElementById(fieldId).value = extractQRData(result.getText());
+          var rawText = result.getText();
+          /* 진단용: raw 텍스트 그대로 표시 */
+          document.getElementById(fieldId).value = rawText;
           reader.reset();
           closeCam();
           toast('QR 스캔 완료!');
