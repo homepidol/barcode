@@ -99,7 +99,6 @@ input.h-range::-webkit-slider-thumb { background:var(--gn); }
 .cam-hdr { padding:15px; display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.8); color:#fff; }
 .cam-box { position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:260px; height:260px; border:2px solid rgba(255,255,255,0.5); border-radius:8px; box-shadow:0 0 0 2000px rgba(0,0,0,0.5); }
 
-/* 강력한 최상단 커스텀 팝업 */
 #confirm-modal { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:9999; display:none; align-items:center; justify-content:center; padding:20px; }
 .confirm-box { background:#fff; width:100%; max-width:340px; border-radius:16px; padding:24px; box-shadow:0 10px 30px rgba(0,0,0,0.3); text-align:center; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 @keyframes popIn { from { transform:scale(0.8); opacity:0; } to { transform:scale(1); opacity:1; } }
@@ -150,7 +149,7 @@ input.h-range::-webkit-slider-thumb { background:var(--gn); }
           <div class="input-row"><div class="input-label" style="color:var(--gn)">잔여(kg)</div><input class="input-field" id="h-rem" type="text" inputmode="decimal" placeholder="숫자만 입력" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');"></div>
         </div>
 
-        <!-- 비율 설정 (완전 개별 분리) -->
+        <!-- 비율 설정 -->
         <div class="ratio-card">
           <div style="font-size:13px; font-weight:700; margin-bottom:16px; text-align:center; color:var(--mt);">개별 비율 설정</div>
           
@@ -171,11 +170,11 @@ input.h-range::-webkit-slider-thumb { background:var(--gn); }
           </div>
         </div>
 
-        <!-- 비고란 (QR 원본 디버그 용도 겸용) -->
+        <!-- 비고란 -->
         <div class="sec-card" style="margin-bottom: 4px;">
           <div class="input-row" style="border-top:none;">
             <div class="input-label" style="color:var(--mt);">비고</div>
-            <input class="input-field" id="note-inp" type="text" placeholder="특이사항 입력 (스캔 시 원본 텍스트 자동표시)">
+            <input class="input-field" id="note-inp" type="text" placeholder="특이사항 입력 (스캔 시 원본텍스트 확인 가능)">
           </div>
         </div>
 
@@ -214,7 +213,7 @@ input.h-range::-webkit-slider-thumb { background:var(--gn); }
       <span class="badge" id="badge" style="display:none">0</span>
     </button>
     <button class="nav-item" onclick="goTab('set', this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> 설정
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> 설정
     </button>
   </nav>
 </div>
@@ -242,7 +241,7 @@ input.h-range::-webkit-slider-thumb { background:var(--gn); }
 <div id="toast"></div>
 
 <script>
-let entries = JSON.parse(localStorage.getItem('sr_v19') || '[]');
+let entries = JSON.parse(localStorage.getItem('sr_v20') || '[]');
 let codeReader = null;
 let currentStream = null;
 let pendingData = null; 
@@ -280,28 +279,31 @@ function goTab(tab, btn) {
   if(tab === 'list') renderList();
 }
 
-/* ★ 매우 강력한 정규식: 무조건 숫자-숫자-숫자 패턴 / 날짜 형태 강제 추출 ★ */
+/* ★ 제공해주신 원본 텍스트에 완벽하게 대응하는 강력한 정규식 ★ */
 function extractQRData(rawText) {
   let lot = "";
   let expDate = "";
 
-  // 1. LOT 추출 (숫자와 하이픈(-) 조합만 강제로 가져옴. 영문 무조건 스킵)
-  const lotMatch = rawText.match(/(\d{4,}-\d+-\d+)/);
+  // 1. LOT 추출 (Batch No 뒤의 숫자 패턴 강제 검출, 영문 완전 배제)
+  // 예: "Batch No : ULBMH 260403-00971-6" -> "260403-00971-6" 추출
+  const lotMatch = rawText.match(/\b(\d{5,}-\d+(?:-\d+)?)\b/);
   if (lotMatch && lotMatch[1]) {
     lot = lotMatch[1];
   }
 
-  // 2. 유효기간 날짜 추출 (YYYY-MM-DD)
-  const dateMatches = rawText.match(/(20\d{2}[-./]\d{2}[-./]\d{2})/g);
-  if (dateMatches && dateMatches.length > 0) {
-    // 날짜가 여러개면 정렬해서 가장 늦은 미래 날짜(유효기간) 선택
-    dateMatches.sort();
-    expDate = dateMatches[dateMatches.length - 1];
+  // 2. 유효기간(Used Before) 추출 
+  // 원본의 "Used Before : 14 / 2027" 형식에서 "14 / 2027"을 매칭!
+  const expKeywordMatch = rawText.match(/(?:used\s*before|use\s*before|expire|exp|유효)[\s:-]*(\d{1,2}\s*\/\s*\d{2,4})/i);
+  
+  if (expKeywordMatch && expKeywordMatch[1]) {
+    // 찾은 값에서 불필요한 공백 제거 (예: "14 / 2027" -> "14/2027")
+    expDate = expKeywordMatch[1].replace(/\s+/g, ''); 
   } else {
-    // 3. (주/년 형식 예: 45/26) 단독 패턴 검색
-    const weekYearMatch = rawText.match(/\b([0-5]?\d\/[2-3]\d)\b/);
-    if (weekYearMatch) {
-      expDate = weekYearMatch[1];
+    // 키워드가 없을 경우를 대비해 YYYY-MM-DD 형식 검출 후 가장 미래 시간 추출
+    const allDates = rawText.match(/\b(20\d{2}[-./]\d{2}[-./]\d{2})\b/g);
+    if (allDates && allDates.length > 0) {
+      allDates.sort();
+      expDate = allDates[allDates.length - 1];
     }
   }
 
@@ -313,11 +315,11 @@ function extractQRData(rawText) {
     return res.join(" / ");
   }
 
-  // ★ 아무것도 안잡히면 숫자와 하이픈만 억지로 뜯어냄 (영문 완전 제거)
-  return rawText.replace(/[a-zA-Z]/g, '').trim(); 
+  // 실패 시 영문/한글 제거하고 출력
+  return rawText.replace(/[a-zA-Z가-힣]/g, '').trim(); 
 }
 
-/* 카메라 */
+/* 카메라 (QR코드 전용) */
 async function openCam(target) {
   document.getElementById('cam-wrap').style.display = 'flex';
   
@@ -340,8 +342,8 @@ async function openCam(target) {
         
         document.getElementById(target === 'subject' ? 's-serial' : 'h-serial').value = parsedData;
         
-        // ★ 디버그를 위해 원본 텍스트를 비고란에 자동 삽입 ★
-        document.getElementById('note-inp').value = "원본: " + rawText;
+        // ★ 디버그/추적용: 비고란에 원본 텍스트 자동 삽입
+        document.getElementById('note-inp').value = "[원본] " + rawText;
 
         closeCam(); toast("QR 스캔 완료!");
       }
@@ -408,7 +410,7 @@ function forceSubmit() {
   };
 
   entries.push(entry);
-  localStorage.setItem('sr_v19', JSON.stringify(entries));
+  localStorage.setItem('sr_v20', JSON.stringify(entries));
 
   ['s-serial', 's-num', 's-rem', 'h-serial', 'h-num', 'h-rem', 'qty-total', 'note-inp'].forEach(id => document.getElementById(id).value = '');
   pendingData = null;
@@ -447,8 +449,8 @@ function renderList() {
   `).join('');
 }
 
-function delE(id) { entries = entries.filter(e => e.id !== id); entries.forEach((e,i) => e.num = i+1); localStorage.setItem('sr_v19', JSON.stringify(entries)); updateBadge(); renderList(); }
-function clearAll() { if(confirm("전체 삭제하시겠습니까?")){ entries=[]; localStorage.removeItem('sr_v19'); updateBadge(); renderList(); } }
+function delE(id) { entries = entries.filter(e => e.id !== id); entries.forEach((e,i) => e.num = i+1); localStorage.setItem('sr_v20', JSON.stringify(entries)); updateBadge(); renderList(); }
+function clearAll() { if(confirm("전체 삭제하시겠습니까?")){ entries=[]; localStorage.removeItem('sr_v20'); updateBadge(); renderList(); } }
 function updateBadge() { const b = document.getElementById('badge'); if(entries.length>0){ b.style.display='flex'; b.textContent=entries.length; } else b.style.display='none'; }
 
 function saveSettings() {
