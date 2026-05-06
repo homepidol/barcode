@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>블럭이동 공지 생성기</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap');
 
 :root {
 –navy: #002a6e;
@@ -24,7 +24,7 @@
 - { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-font-family: ‘Noto Sans KR’, sans-serif;
+font-family: ‘Nanum Gothic’, ‘Apple SD Gothic Neo’, sans-serif;
 background: var(–bg);
 color: var(–text);
 min-height: 100vh;
@@ -351,14 +351,14 @@ margin-bottom: 10px;
 }
 .ep-header h1 {
 color: #fff;
-font-size: 20px;
-font-weight: 900;
+font-size: 21px;
+font-weight: 800;
 line-height: 1.35;
 }
 .ep-header h1 span { color: #7ec8ff; }
 .ep-header-sub {
 color: rgba(255,255,255,0.65);
-font-size: 12px;
+font-size: 13px;
 margin-top: 6px;
 }
 
@@ -369,8 +369,8 @@ padding: 12px 22px;
 display: flex;
 align-items: center;
 gap: 10px;
-font-size: 13px;
-font-weight: 700;
+font-size: 14px;
+font-weight: 800;
 color: #7a5700;
 }
 .ep-urgent span { color: #c0392b; }
@@ -380,7 +380,7 @@ padding: 20px 28px;
 border-bottom: 1px solid #eef0f3;
 }
 .ep-section-title {
-font-size: 10px;
+font-size: 11px;
 font-weight: 800;
 color: #999;
 letter-spacing: 1.2px;
@@ -401,15 +401,15 @@ border: 1px solid #e4e8ee;
 }
 .ep-info-card.hl { background: #e8f0fe; border-color: #b3c8fa; }
 .ep-info-card label {
-font-size: 10px;
+font-size: 11px;
 color: #999;
-font-weight: 700;
+font-weight: 800;
 display: block;
 margin-bottom: 3px;
 }
 .ep-info-card .val {
-font-size: 17px;
-font-weight: 900;
+font-size: 18px;
+font-weight: 800;
 color: #003087;
 }
 .ep-info-card .val.red { color: #c0392b; }
@@ -425,37 +425,40 @@ gap: 14px;
 border: 1px solid #e4e8ee;
 }
 .ep-route-node { text-align: center; }
-.ep-route-node .nl { font-size: 10px; color: #999; margin-bottom: 3px; }
+.ep-route-node .nl { font-size: 11px; color: #999; margin-bottom: 3px; font-weight: 700; }
 .ep-route-node .nv { font-size: 26px; font-weight: 900; line-height: 1; }
 .ep-route-node.from .nv { color: #c0392b; }
 .ep-route-node.to .nv { color: #1a7a4a; }
 .ep-arrow { font-size: 26px; font-weight: 900; color: #003087; }
-.ep-route-note { font-size: 11px; color: #666; text-align: center; margin-top: 8px; }
+.ep-route-note { font-size: 12px; font-weight: 700; color: #666; text-align: center; margin-top: 8px; }
 
-.ep-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.ep-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .ep-table th {
 background: #003087;
 color: #fff;
-padding: 9px 11px;
+padding: 11px 13px;
 text-align: center;
-font-size: 11px;
-font-weight: 700;
+font-size: 13px;
+font-weight: 800;
+letter-spacing: 0.3px;
 }
 .ep-table td {
-padding: 9px 11px;
+padding: 11px 13px;
 border-bottom: 1px solid #eef0f3;
 text-align: center;
 vertical-align: middle;
+font-size: 14px;
+font-weight: 700;
 }
 .ep-table tr:last-child td { border-bottom: none; }
 .ep-table tr:nth-child(even) td { background: #f7f9fc; }
 
 .badge {
 display: inline-block;
-padding: 2px 8px;
+padding: 3px 10px;
 border-radius: 20px;
-font-size: 10px;
-font-weight: 700;
+font-size: 12px;
+font-weight: 800;
 }
 .badge.done { background: #d4edda; color: #1a7a4a; }
 .badge.ing  { background: #fff3cd; color: #7a5700; }
@@ -468,8 +471,8 @@ border-radius: 10px;
 padding: 16px;
 }
 .ep-action-title {
-font-size: 13px;
-font-weight: 900;
+font-size: 14px;
+font-weight: 800;
 color: #c0392b;
 margin-bottom: 10px;
 display: flex;
@@ -481,44 +484,27 @@ gap: 5px;
 display: flex;
 align-items: flex-start;
 gap: 7px;
-font-size: 12px;
+font-size: 13px;
+font-weight: 700;
 color: #333;
-margin-bottom: 7px;
-line-height: 1.5;
+margin-bottom: 8px;
+line-height: 1.6;
 }
 .ep-action-list li::before {
 content: ‘▶’;
 color: #c0392b;
-font-size: 9px;
+font-size: 10px;
 margin-top: 4px;
 flex-shrink: 0;
 }
 
-.ep-deadline {
-background: linear-gradient(90deg, #c0392b, #e74c3c);
-padding: 13px 28px;
-display: flex;
-align-items: center;
-justify-content: space-between;
-}
-.ep-deadline .dl-text { color: #fff; font-size: 12px; font-weight: 600; }
-.ep-deadline .dl-date { color: #fff; font-size: 18px; font-weight: 900; letter-spacing: 1px; }
-.ep-dday {
-background: #fff;
-color: #c0392b;
-font-weight: 900;
-font-size: 14px;
-padding: 5px 14px;
-border-radius: 20px;
-white-space: nowrap;
-}
-
 .ep-footer {
 background: #f7f9fc;
-padding: 12px 28px;
+padding: 14px 28px;
 text-align: center;
-font-size: 10px;
-color: #aaa;
+font-size: 12px;
+font-weight: 700;
+color: #888;
 }
 
 /* ── 히스토리 탭 ── */
@@ -900,16 +886,16 @@ function buildEmailHTML() {
 
   const scheduleHTML = scheduleRows.map(r => `
     <tr>
-      <td><strong>${esc(r.date)}</strong></td>
-      <td>${esc(r.content)}</td>
-      <td style="font-size:11px;color:#555;">${esc(r.note)}</td>
-      <td>${badgeHTML(r.status)}</td>
+      <td style="text-align:center;font-size:14px;font-weight:800;padding:11px 13px;border-bottom:1px solid #eef0f3;vertical-align:middle;"><strong>${esc(r.date)}</strong></td>
+      <td style="text-align:center;font-size:14px;font-weight:700;padding:11px 13px;border-bottom:1px solid #eef0f3;vertical-align:middle;">${esc(r.content)}</td>
+      <td style="text-align:center;font-size:13px;font-weight:700;color:#555;padding:11px 13px;border-bottom:1px solid #eef0f3;vertical-align:middle;">${esc(r.note)}</td>
+      <td style="text-align:center;padding:11px 13px;border-bottom:1px solid #eef0f3;vertical-align:middle;">${badgeHTML(r.status)}</td>
     </tr>
   `).join('');
 
   const actionsHTML = actionItems.filter(a => a.text).map(a =>
-    `<li style="display:flex;align-items:flex-start;gap:7px;font-size:12px;color:#333;margin-bottom:7px;line-height:1.5;">
-      <span style="color:#c0392b;font-size:9px;margin-top:4px;flex-shrink:0;">▶</span>
+    `<li style="display:flex;align-items:flex-start;gap:7px;font-size:13px;font-weight:700;color:#333;margin-bottom:8px;line-height:1.6;">
+      <span style="color:#c0392b;font-size:10px;margin-top:4px;flex-shrink:0;">▶</span>
       ${esc(a.text)}
     </li>`
   ).join('');
@@ -920,9 +906,10 @@ function buildEmailHTML() {
 <head>
 <meta charset="UTF-8">
 <style>
-  body { font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; background:#f0f2f5; padding:20px; }
+  @import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap');
+  body { font-family: 'Nanum Gothic', 'Apple SD Gothic Neo', sans-serif; background:#f0f2f5; padding:20px; }
   .wrap { max-width:660px; margin:0 auto; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,0.1); }
-  .badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:700; }
+  .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:800; }
   .badge.done { background:#d4edda; color:#1a7a4a; }
   .badge.ing  { background:#fff3cd; color:#7a5700; }
   .badge.plan { background:#e8f0fe; color:#003087; }
@@ -934,64 +921,64 @@ function buildEmailHTML() {
 
   <div style="background:linear-gradient(135deg,#003087,#0057c2);padding:28px 32px;">
     <div style="display:inline-block;background:#ff4444;color:#fff;font-size:10px;font-weight:800;letter-spacing:1px;padding:3px 10px;border-radius:4px;margin-bottom:10px;">🚢 블럭이동 공식 공지</div>
-    <div style="color:#fff;font-size:20px;font-weight:900;line-height:1.35;">[동커버] SN${esc(sn)} 블럭 이동 요청<br><span style="color:#7ec8ff;">${esc(from)} → ${esc(to)}</span></div>
-    <div style="color:rgba(255,255,255,0.65);font-size:12px;margin-top:6px;">발신: ${esc(sender)}</div>
+    <div style="color:#fff;font-size:20px;font-weight:800;line-height:1.35;">[동커버] SN${esc(sn)} 블럭 이동 요청<br><span style="color:#7ec8ff;">${esc(from)} → ${esc(to)}</span></div>
+    <div style="color:rgba(255,255,255,0.65);font-size:13px;margin-top:6px;">발신: ${esc(sender)}</div>
   </div>
 
   <div style="background:#fff3cd;border-left:5px solid #ffc107;padding:12px 22px;display:flex;align-items:center;gap:10px;">
     <span style="font-size:20px;">⚠️</span>
-    <span style="font-size:13px;font-weight:700;color:#7a5700;">${esc(urgent)}</span>
+    <span style="font-size:14px;font-weight:800;color:#7a5700;">${esc(urgent)}</span>
   </div>
 
   <div style="padding:20px 28px;border-bottom:1px solid #eef0f3;">
-    <div style="font-size:10px;font-weight:800;color:#999;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:12px;">📋 핵심 정보</div>
+    <div style="font-size:11px;font-weight:800;color:#999;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:12px;">📋 핵심 정보</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
       <div style="background:#e8f0fe;border-radius:8px;padding:13px 15px;border:1px solid #b3c8fa;">
-        <div style="font-size:10px;color:#999;font-weight:700;margin-bottom:3px;">선번 / TK</div>
-        <div style="font-size:17px;font-weight:900;color:#003087;">SN${esc(sn)} · ${esc(tk)}</div>
+        <div style="font-size:11px;color:#999;font-weight:800;margin-bottom:3px;">선번 / TK</div>
+        <div style="font-size:18px;font-weight:800;color:#003087;">SN${esc(sn)} · ${esc(tk)}</div>
       </div>
       <div style="background:#f7f9fc;border-radius:8px;padding:13px 15px;border:1px solid #e4e8ee;">
-        <div style="font-size:10px;color:#999;font-weight:700;margin-bottom:3px;">P/T 탑재 마감</div>
-        <div style="font-size:17px;font-weight:900;color:#c0392b;">${esc(deadline)}</div>
+        <div style="font-size:11px;color:#999;font-weight:800;margin-bottom:3px;">P/T 탑재 마감</div>
+        <div style="font-size:18px;font-weight:800;color:#c0392b;">${esc(deadline)}</div>
       </div>
       <div style="background:#f7f9fc;border-radius:8px;padding:13px 15px;border:1px solid #e4e8ee;">
-        <div style="font-size:10px;color:#999;font-weight:700;margin-bottom:3px;">블럭 이동일</div>
-        <div style="font-size:17px;font-weight:900;color:#003087;">${esc(moveDate)}</div>
+        <div style="font-size:11px;color:#999;font-weight:800;margin-bottom:3px;">블럭 이동일</div>
+        <div style="font-size:18px;font-weight:800;color:#003087;">${esc(moveDate)}</div>
       </div>
       <div style="background:#f7f9fc;border-radius:8px;padding:13px 15px;border:1px solid #e4e8ee;">
-        <div style="font-size:10px;color:#999;font-weight:700;margin-bottom:3px;">이동 시간대</div>
-        <div style="font-size:17px;font-weight:900;color:#003087;">${esc(moveTime)}</div>
+        <div style="font-size:11px;color:#999;font-weight:800;margin-bottom:3px;">이동 시간대</div>
+        <div style="font-size:18px;font-weight:800;color:#003087;">${esc(moveTime)}</div>
       </div>
     </div>
   </div>
 
   <div style="padding:20px 28px;border-bottom:1px solid #eef0f3;">
-    <div style="font-size:10px;font-weight:800;color:#999;letter-spacing:1.2px;margin-bottom:12px;">🔀 블럭 이동 경로</div>
+    <div style="font-size:11px;font-weight:800;color:#999;letter-spacing:1.2px;margin-bottom:12px;">🔀 블럭 이동 경로</div>
     <div style="background:#f7f9fc;border-radius:10px;padding:18px;display:flex;align-items:center;justify-content:center;gap:14px;border:1px solid #e4e8ee;">
       <div style="text-align:center;">
-        <div style="font-size:10px;color:#999;margin-bottom:3px;">출발 (현재 위치)</div>
-        <div style="font-size:26px;font-weight:900;color:#c0392b;line-height:1;">${esc(from)}</div>
+        <div style="font-size:11px;color:#999;margin-bottom:3px;">출발 (현재 위치)</div>
+        <div style="font-size:26px;font-weight:800;color:#c0392b;line-height:1;">${esc(from)}</div>
       </div>
-      <div style="font-size:26px;font-weight:900;color:#003087;">→</div>
+      <div style="font-size:26px;font-weight:800;color:#003087;">→</div>
       <div style="text-align:center;">
-        <div style="font-size:10px;color:#999;margin-bottom:3px;">도착 (목적 위치)</div>
-        <div style="font-size:26px;font-weight:900;color:#1a7a4a;line-height:1;">${esc(to)}</div>
+        <div style="font-size:11px;color:#999;margin-bottom:3px;">도착 (목적 위치)</div>
+        <div style="font-size:26px;font-weight:800;color:#1a7a4a;line-height:1;">${esc(to)}</div>
       </div>
     </div>
-    ${extra ? `<div style="font-size:11px;color:#666;text-align:center;margin-top:8px;">※ ${esc(extra)}</div>` : ''}
+    ${extra ? `<div style="font-size:12px;color:#666;text-align:center;margin-top:8px;font-weight:700;">※ ${esc(extra)}</div>` : ''}
   </div>
 
 ${scheduleRows.length > 0 ? `
 
   <div style="padding:20px 28px;border-bottom:1px solid #eef0f3;">
-    <div style="font-size:10px;font-weight:800;color:#999;letter-spacing:1.2px;margin-bottom:12px;">📅 작업 일정</div>
-    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+    <div style="font-size:11px;font-weight:800;color:#999;letter-spacing:1.2px;margin-bottom:12px;">📅 작업 일정</div>
+    <table style="width:100%;border-collapse:collapse;font-size:14px;">
       <thead>
         <tr>
-          <th style="background:#003087;color:#fff;padding:9px 11px;text-align:center;font-size:11px;">일자</th>
-          <th style="background:#003087;color:#fff;padding:9px 11px;text-align:center;font-size:11px;">작업 내용</th>
-          <th style="background:#003087;color:#fff;padding:9px 11px;text-align:center;font-size:11px;">비고</th>
-          <th style="background:#003087;color:#fff;padding:9px 11px;text-align:center;font-size:11px;">상태</th>
+          <th style="background:#003087;color:#fff;padding:11px 13px;text-align:center;font-size:13px;font-weight:800;">일자</th>
+          <th style="background:#003087;color:#fff;padding:11px 13px;text-align:center;font-size:13px;font-weight:800;">작업 내용</th>
+          <th style="background:#003087;color:#fff;padding:11px 13px;text-align:center;font-size:13px;font-weight:800;">비고</th>
+          <th style="background:#003087;color:#fff;padding:11px 13px;text-align:center;font-size:13px;font-weight:800;">상태</th>
         </tr>
       </thead>
       <tbody>${scheduleHTML}</tbody>
@@ -1001,22 +988,14 @@ ${scheduleRows.length > 0 ? `
 ${actionsHTML ? `
 
   <div style="padding:20px 28px;border-bottom:1px solid #eef0f3;">
-    <div style="font-size:10px;font-weight:800;color:#999;letter-spacing:1.2px;margin-bottom:12px;">✅ 담당자 조치 요청사항</div>
+    <div style="font-size:11px;font-weight:800;color:#999;letter-spacing:1.2px;margin-bottom:12px;">✅ 담당자 조치 요청사항</div>
     <div style="background:#fff5f5;border:2px solid #ffcccc;border-radius:10px;padding:16px;">
-      <div style="font-size:13px;font-weight:900;color:#c0392b;margin-bottom:10px;">🔴 아래 사항을 반드시 확인해 주세요</div>
+      <div style="font-size:14px;font-weight:800;color:#c0392b;margin-bottom:10px;">🔴 아래 사항을 반드시 확인해 주세요</div>
       <ul style="list-style:none;margin:0;padding:0;">${actionsHTML}</ul>
     </div>
   </div>` : ''}
 
-  <div style="background:linear-gradient(90deg,#c0392b,#e74c3c);padding:13px 28px;display:flex;align-items:center;justify-content:space-between;">
-    <div>
-      <div style="color:#fff;font-size:12px;font-weight:600;">⏰ P/T 탑재 마감까지</div>
-      <div style="color:#fff;font-size:18px;font-weight:900;letter-spacing:1px;">${esc(deadline)}</div>
-    </div>
-    <div style="background:#fff;color:#c0392b;font-weight:900;font-size:14px;padding:5px 14px;border-radius:20px;">${dday}</div>
-  </div>
-
-  <div style="background:#f7f9fc;padding:12px 28px;text-align:center;font-size:10px;color:#aaa;">
+  <div style="background:#f7f9fc;padding:14px 28px;text-align:center;font-size:12px;font-weight:700;color:#888;">
     문의: ${esc(sender)} | 본 메일은 공식 블럭이동 공지입니다.
   </div>
 
@@ -1039,10 +1018,10 @@ const deadline = document.getElementById(‘deadline’).value || ‘’;
 const extra    = document.getElementById(‘extraNote’).value || ‘’;
 const dday     = calcDday(deadline);
 
-const scheduleHTML = scheduleRows.map(r => `<tr> <td><strong>${esc(r.date)}</strong></td> <td>${esc(r.content)}</td> <td style="font-size:11px;color:#555;">${esc(r.note)}</td> <td>${badgeHTML(r.status)}</td> </tr>`).join(’’);
+const scheduleHTML = scheduleRows.map(r => `<tr> <td><strong>${esc(r.date)}</strong></td> <td>${esc(r.content)}</td> <td>${esc(r.note)}</td> <td>${badgeHTML(r.status)}</td> </tr>`).join(’’);
 
 const actionsHTML = actionItems.filter(a => a.text).map(a =>
-`<li><span style="color:#c0392b;font-size:9px;flex-shrink:0;margin-top:3px;">▶</span>${esc(a.text)}</li>`
+`<li><span style="color:#c0392b;font-size:10px;flex-shrink:0;margin-top:3px;">▶</span>${esc(a.text)}</li>`
 ).join(’’);
 
 document.getElementById(‘email-preview’).innerHTML = `
@@ -1095,14 +1074,6 @@ ${actionsHTML ? `
     <ul class="ep-action-list">${actionsHTML}</ul>
   </div>
 </div>` : ''}
-
-<div class="ep-deadline">
-  <div>
-    <div class="dl-text">⏰ P/T 탑재 마감까지</div>
-    <div class="dl-date">${esc(deadline)}</div>
-  </div>
-  <div class="ep-dday">${dday || 'D-?'}</div>
-</div>
 
 <div class="ep-footer">문의: ${esc(sender)} | 본 메일은 공식 블럭이동 공지입니다.</div>
 ```
